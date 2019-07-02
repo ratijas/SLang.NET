@@ -3,6 +3,9 @@ using System.IO;
 using CommandLine;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using SLang.IR;
+using SLang.IR.JSON;
+using Parser = SLang.IR.JSON.Parser;
 
 namespace SLang.NET
 {
@@ -10,7 +13,7 @@ namespace SLang.NET
     {
         static void Main(params string[] args)
         {
-            new Parser(settings =>
+            new CommandLine.Parser(settings =>
                 {
                     settings.IgnoreUnknownArguments = false;
                     settings.AutoHelp = false;
@@ -27,34 +30,28 @@ namespace SLang.NET
                     new BufferedStream(
                         new FileStream(o.Input.ToString(), FileMode.Open, FileAccess.Read, FileShare.Read)));
 
-            JsonIr ir;
+            JsonEntity ir;
 
             using (inputStream)
             {
                 using (var reader = new JsonTextReader(inputStream))
                 {
                     JsonSerializer serializer = new JsonSerializer();
-                    ir = (JsonIr) serializer.Deserialize(reader, typeof(JsonIr));
+                    ir = (JsonEntity) serializer.Deserialize(reader, typeof(JsonEntity));
                 }
             }
 
-            Console.WriteLine(ir);
+            var parser = new Parser();
+            Entity root = parser.Parse(ir);
 
             using (var outputStream =
                 new StreamWriter(
                     new BufferedStream(
                         new FileStream(o.Output.ToString(), FileMode.Create, FileAccess.Write, FileShare.None))))
             {
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(outputStream, ir);
+                JsonSerializer serializer = new JsonSerializer { Formatting = Formatting.Indented };
+                serializer.Serialize(outputStream, root);
             }
         }
-    }
-
-    public class JsonIr
-    {
-        public string type { get; set; }
-        public List<JsonIr> children { get; set; }
-        public string value { get; set; }
     }
 }
