@@ -1,15 +1,16 @@
 ﻿using System;
 using System.IO;
 using CommandLine;
+using Mono.Cecil;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 using SLang.IR;
 using SLang.IR.JSON;
+using SLang.NET.Gen;
 using Parser = SLang.IR.JSON.Parser;
 
 namespace SLang.NET
 {
-    partial class Program
+    class Program
     {
         static void Main(params string[] args)
         {
@@ -44,14 +45,25 @@ namespace SLang.NET
             var parser = new Parser();
             Entity root = parser.Parse(ir);
 
+            var jsonOutputPath = o.Output.ToString() + ".ast.json";
             using (var outputStream =
                 new StreamWriter(
                     new BufferedStream(
-                        new FileStream(o.Output.ToString(), FileMode.Create, FileAccess.Write, FileShare.None))))
+                        new FileStream(jsonOutputPath, FileMode.Create, FileAccess.Write, FileShare.None))))
             {
                 JsonSerializer serializer = new JsonSerializer { Formatting = Formatting.Indented };
                 serializer.Serialize(outputStream, root);
             }
+
+
+            var dllPath = o.Output;
+            if (root is Compilation compilation)
+            {
+                var asm = Compiler.CompileToIL(compilation, dllPath.Name);
+                asm.Write(dllPath.ToString());
+            }
+            else
+                throw new JsonFormatException(ir, "Root entity is not COMPILATION type");
         }
     }
 }

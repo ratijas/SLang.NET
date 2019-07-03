@@ -7,12 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CommandLineParser" Version="2.5.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+        <PackageReference Include="CommandLineParser" Version="2.5.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+        
+        <PackageReference Include="Mono.Cecil" Version="0.10.4" />
+        <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+        <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SLang.IR\SLang.IR.csproj" />
+        <ProjectReference Include="..\SLang.IR\SLang.IR.csproj" />
     </ItemGroup>
 
 </Project>
