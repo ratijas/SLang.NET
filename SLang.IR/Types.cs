@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using SLang.IR.JSON;
 
 namespace SLang.IR
 {
@@ -9,13 +7,38 @@ namespace SLang.IR
     {
     }
 
-    public class Identifier : Entity
+    internal class EntityList : Entity
+    {
+        public List<Entity> Children { get; } = new List<Entity>();
+
+        public EntityList(IEnumerable<Entity> children)
+        {
+            Children.AddRange(children);
+        }
+    }
+
+    public sealed class Identifier : Entity
     {
         public string Value { get; }
 
         public Identifier(string value)
         {
             Value = value;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Identifier identifier && Value.Equals(identifier.Value);
+        }
+
+        public override int GetHashCode()
+        {
+            return Value.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Value;
         }
     }
 
@@ -31,6 +54,16 @@ namespace SLang.IR
         }
     }
 
+    public abstract class Declaration : Entity
+    {
+        public Identifier Name { get; set; }
+
+        protected Declaration(Identifier name)
+        {
+            Name = name;
+        }
+    }
+
     internal class DeclarationList : Entity
     {
         public List<Declaration> Declarations { get; } = new List<Declaration>();
@@ -41,23 +74,8 @@ namespace SLang.IR
         }
     }
 
-    internal class EntityList : Entity
-    {
-        public List<Entity> Children { get; } = new List<Entity>();
-
-        public EntityList(IEnumerable<Entity> children)
-        {
-            Children.AddRange(children);
-        }
-    }
-
-    public abstract class Declaration : Entity
-    {
-    }
-
     public class Routine : Declaration
     {
-        public Identifier Name { get; set; }
         public bool IsForeign { get; set; }
         public List<Argument> Arguments { get; } = new List<Argument>();
         public UnitRef ReturnType { get; set; }
@@ -74,8 +92,8 @@ namespace SLang.IR
             IEnumerable<Entity> body,
             PostCondition postCondition
         )
+            : base(name)
         {
-            Name = name;
             IsForeign = isForeign;
             Arguments.AddRange(arguments);
             ReturnType = returnType;
@@ -88,7 +106,7 @@ namespace SLang.IR
         {
             public UnitRef Type { get; set; }
             public Identifier Name { get; set; }
-            
+
             public Argument(UnitRef type, Identifier name)
             {
                 Type = type;
@@ -103,15 +121,34 @@ namespace SLang.IR
         }
     }
 
+    public class Variable : Declaration
+    {
+        // TODO: replace with appropriate Type type
+        /// <summary>
+        /// Type may be implicit, in which case it is up to compiler to infer it from initializer expression.
+        /// </summary>
+        public UnitRef OptionalType { get; set; }
+
+        public Expression OptionalInitializer { get; set; }
+
+        public Variable(Identifier name, UnitRef type, Expression initializer)
+            : base(name)
+        {
+            OptionalType = type;
+            OptionalInitializer = initializer;
+        }
+    }
+
     public class ForeignSpec : Entity
     {
         public bool IsForeign { get; }
+
         public ForeignSpec(bool isForeign = false)
         {
             IsForeign = isForeign;
         }
     }
-    
+
     public class UnitRef : Entity
     {
         private static UnitRef _void = new UnitRef(new Identifier("$void"));
@@ -185,7 +222,11 @@ namespace SLang.IR
     {
     }
 
-    public class Literal : Expression
+    public abstract class Primary : Expression
+    {
+    }
+
+    public class Literal : Primary
     {
         public string Value { get; set; }
         public UnitRef Type { get; set; }
@@ -197,6 +238,38 @@ namespace SLang.IR
         }
     }
 
+    public class Reference : Primary
+    {
+        public Identifier Name { get; }
+
+        public Reference(Identifier name)
+        {
+            Name = name;
+        }
+    }
+
+    public abstract class Secondary : Expression
+    {
+    }
+
+    public class Call : Secondary
+    {
+        public Expression Callee { get; set; }
+        public List<Expression> Arguments { get; } = new List<Expression>();
+
+        public Call(Expression callee, IEnumerable<Expression> arguments)
+        {
+            Callee = callee;
+            Arguments.AddRange(arguments);
+        }
+
+        internal Call(Expression callee, ExpressionList arguments = null)
+        {
+            Callee = callee;
+            if (arguments != null)
+                Arguments.AddRange(arguments.Expressions);
+        }
+    }
 
 //    ENTITY (abstract)
 //

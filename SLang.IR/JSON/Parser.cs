@@ -43,7 +43,10 @@ namespace SLang.IR.JSON
             PRECONDITION = "PRECONDITION",
             POSTCONDITION = "POSTCONDITION",
             RETURN = "RETURN",
-            LITERAL = "LITERAL"
+            LITERAL = "LITERAL",
+            CALL = "CALL",
+            REFERENCE = "REFERENCE",
+            VARIABLE = "VARIABLE"
             ;
 
         public Parser()
@@ -62,6 +65,9 @@ namespace SLang.IR.JSON
                 {POSTCONDITION, ParsePostCondition},
                 {RETURN, ParseReturn},
                 {LITERAL, ParseLiteral},
+                {CALL, ParseCall},
+                {REFERENCE, ParseReference},
+                {VARIABLE, ParseVariable},
             };
         }
 
@@ -80,7 +86,7 @@ namespace SLang.IR.JSON
             return o.Children?.Select(Parse) ?? new Entity[0];
         }
 
-        private Compilation ParseCompilation(JsonEntity o)
+        public Compilation ParseCompilation(JsonEntity o)
         {
             EntityMixin.CheckType(o, COMPILATION);
             EntityMixin.ValueMustBeNull(o);
@@ -113,9 +119,7 @@ namespace SLang.IR.JSON
             EntityMixin.CheckType(o, ROUTINE);
             EntityMixin.ValueMustBeNull(o);
 
-            var children = ParseChildren(o).ToList();
-
-            try
+            return Guard(o, children =>
             {
                 // name
                 var name = children.OfType<Identifier>().Single();
@@ -141,12 +145,7 @@ namespace SLang.IR.JSON
                     preCondition: pre,
                     body: body,
                     postCondition: post);
-            }
-            catch (InvalidOperationException e)
-            {
-                // First() / Single() called on empty / long sequence
-                throw new JsonFormatException(o, "routine definition is invalid", e);
-            }
+            });
         }
 
         private ForeignSpec ParseForeignSpec(JsonEntity o)
@@ -227,6 +226,73 @@ namespace SLang.IR.JSON
             if (unitRef == null) throw new JsonFormatException(o, "literal unit reference not found");
 
             return new Literal(o.Value, unitRef);
+        }
+
+        private Call ParseCall(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, CALL);
+            EntityMixin.ValueMustBeNull(o);
+
+            return Guard(o, children =>
+            {
+                var callee = children.OfType<Expression>().Single();
+                var arguments = children.OfType<ExpressionList>().SingleOrDefault();
+
+                return new Call(callee, arguments);
+            });
+        }
+
+        private Reference ParseReference(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, REFERENCE);
+            EntityMixin.ValueMustBeNull(o);
+
+            return Guard(o, children =>
+            {
+                var name = children.OfType<Identifier>().Single();
+
+                return new Reference(name);
+                // TODO: example and parser source code mismatch
+                throw new NotImplementedException("example and parser source code mismatch");
+            });
+        }
+
+        private Variable ParseVariable(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, VARIABLE);
+            EntityMixin.ValueMustBeNull(o);
+            
+            return Guard(o, children =>
+            {
+                var name = children.OfType<Identifier>().Single();
+                var type = children.OfType<UnitRef>().DefaultIfEmpty(null).SingleOrDefault();
+                var init = children.OfType<Expression>().DefaultIfEmpty(null).SingleOrDefault();
+
+                if (type == null && init == null)
+                    throw new JsonFormatException(o, $"variable {name} has no type nor initializer");
+                return new Variable(name, type, init);
+            });
+        }
+
+        /// <summary>
+        /// Guard against First/Single methods throwing on empty/too long sequences
+        /// </summary>
+        /// <param name="o"></param>
+        /// <param name="f"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="JsonFormatException"></exception>
+        protected T Guard<T>(JsonEntity o, Func<List<Entity>, T> f)
+        {
+            try
+            {
+                var children = ParseChildren(o).ToList();
+                return f(children);
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new JsonFormatException(o, $"{o.Type} definition is invalid", e);
+            }
         }
     }
 }
