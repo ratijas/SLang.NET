@@ -33,6 +33,7 @@ namespace SLang.NET.Gen
             BuiltInUnits.Add(new VoidBuiltInUnitDefinition(this));
             BuiltInUnits.Add(new IntegerBuiltInUnitDefinition(this));
             BuiltInUnits.Add(new StringBuiltInUnitDefinition(this));
+            BuiltInUnits.Add(new RealBuiltInUnitDefinition(this));
 
             Units.AddRange(BuiltInUnits);
 
@@ -105,6 +106,7 @@ namespace SLang.NET.Gen
         private BuiltInUnitDefinition type_void;
         private BuiltInUnitDefinition type_integer;
         private BuiltInUnitDefinition type_string;
+        private BuiltInUnitDefinition type_real;
 
         public BuiltInUnitDefinition Void =>
             type_void ?? Resolve(out type_void, VoidBuiltInUnitDefinition.UnitName);
@@ -114,6 +116,9 @@ namespace SLang.NET.Gen
 
         public BuiltInUnitDefinition String =>
             type_string ?? Resolve(out type_string, StringBuiltInUnitDefinition.UnitName);
+
+        public BuiltInUnitDefinition Real =>
+            type_real ?? Resolve(out type_real, RealBuiltInUnitDefinition.UnitName);
 
         // TODO: add more built-in units
     }
