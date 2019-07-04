@@ -3,13 +3,18 @@ using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
+using SLang.NET.BuiltIns;
 
 namespace SLang.NET.Gen
 {
-    public abstract class UnitDefinition
+    public class UnitReference
+    {
+        public Identifier Name { get; protected set; }
+    }
+
+    public abstract class UnitDefinition : UnitReference
     {
         public abstract bool IsNative { get; }
-        public Identifier Name { get; protected set; }
         public ModuleDefinition NativeModule { get; protected set; }
         public TypeDefinition NativeType { get; protected set; }
         public List<RoutineDefinition> Routines { get; } = new List<RoutineDefinition>();
@@ -43,35 +48,6 @@ namespace SLang.NET.Gen
         }
 
         public abstract void LoadFromLiteral(string literal, ILProcessor ip);
-
-        public class IntegerBuiltInUnitDefinition : BuiltInUnitDefinition
-        {
-            public IntegerBuiltInUnitDefinition(ModuleDefinition module)
-                : base(new Identifier("Integer"), module.TypeSystem.Int32)
-            {
-            }
-
-            public override void LoadFromLiteral(string literal, ILProcessor ip)
-            {
-                if (!int.TryParse(literal, out var result))
-                    throw new FormatException($"Unable to parse integer literal: '{literal}'");
-
-                ip.Emit(OpCodes.Ldc_I4, result);
-            }
-        }
-
-        public class StringBuiltInUnitDefinition : BuiltInUnitDefinition
-        {
-            public StringBuiltInUnitDefinition(ModuleDefinition module)
-                : base(new Identifier("String"), module.TypeSystem.String)
-            {
-            }
-
-            public override void LoadFromLiteral(string literal, ILProcessor ip)
-            {
-                ip.Emit(OpCodes.Ldstr, literal);
-            }
-        }
     }
 
     public class SLangUnitDefinition : UnitDefinition
