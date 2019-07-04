@@ -151,8 +151,8 @@ namespace SLang.IR
 
     public class UnitRef : Entity
     {
-        private static UnitRef _void = new UnitRef(new Identifier("$void"));
-        public static UnitRef Void => _void;
+        public static UnitRef Void { get; } = new UnitRef(new Identifier("$void"));
+
         public Identifier Name { get; }
 
         public UnitRef(Identifier name)
