@@ -1,5 +1,4 @@
 using System;
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
 using SLang.NET.Gen;
@@ -8,8 +7,10 @@ namespace SLang.NET.BuiltIns
 {
     public class IntegerBuiltInUnitDefinition : BuiltInUnitDefinition
     {
-        public IntegerBuiltInUnitDefinition(ModuleDefinition module)
-            : base(new Identifier("Integer"), module.TypeSystem.Int32)
+        public static readonly Identifier UnitName = new Identifier("Integer");
+
+        public IntegerBuiltInUnitDefinition(Context ctx)
+            : base(ctx, UnitName, ctx.NativeModule.TypeSystem.Int32)
         {
         }
 

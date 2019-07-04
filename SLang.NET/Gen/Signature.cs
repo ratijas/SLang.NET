@@ -5,29 +5,78 @@ using SLang.IR;
 
 namespace SLang.NET.Gen
 {
-    public class Signature
+    public interface ISignature<T>
     {
-        public TypeReference ReturnType { get; set; }
-        public List<TypeReference> Arguments { get; } = new List<TypeReference>();
+        T ReturnType { get; set; }
 
-        public Signature(ModuleDefinition module) : this(module.TypeSystem.Void)
+        /// <summary>
+        /// Parameters may have name, or it can be an empty string.
+        /// </summary>
+        List<(Identifier Name, T Type)> Parameters { get; }
+
+        ISignature<UnitDefinition> Resolve();
+    }
+
+    public class SignatureReference : ISignature<UnitReference>
+    {
+        public UnitReference ReturnType { get; set; }
+
+        public List<(Identifier Name, UnitReference Type)> Parameters { get; } =
+            new List<(Identifier Name, UnitReference Type)>();
+
+        public SignatureReference(Context ctx) : this(ctx.TypeSystem.Void)
         {
         }
-        
-        public Signature(TypeReference returnType)
+
+        public SignatureReference(UnitReference returnType)
         {
             ReturnType = returnType;
         }
 
-        public Signature(IMethodSignature methodReference)
+        public SignatureReference(Context ctx, Routine routine)
         {
-            ReturnType = methodReference.ReturnType;
-            Arguments.AddRange(methodReference.Parameters.Select(p => p.ParameterType));
+            ReturnType = new UnitReference(ctx, routine.ReturnType);
+            Parameters.AddRange(routine.Arguments.Select(argument =>
+                (argument.Name, new UnitReference(ctx, argument.Type))));
         }
 
-        public void AddArgument(TypeReference nativeType)
+        public ISignature<UnitDefinition> Resolve()
         {
-            Arguments.Add(nativeType);
+            var sig = new SignatureDefinition(
+                ReturnType.Resolve(),
+                Parameters.Select(argument => (argument.Name, argument.Type.Resolve())));
+            return sig;
+        }
+    }
+
+    public class SignatureDefinition : ISignature<UnitDefinition>
+    {
+        public UnitDefinition ReturnType { get; set; }
+
+        public List<(Identifier Name, UnitDefinition Type)> Parameters { get; }
+            = new List<(Identifier Name, UnitDefinition Type)>();
+
+        public SignatureDefinition(Context ctx) : this(ctx.TypeSystem.Void)
+        {
+        }
+
+        public SignatureDefinition(UnitDefinition returnType)
+        {
+            ReturnType = returnType;
+        }
+
+        public SignatureDefinition(
+            UnitDefinition returnType,
+            IEnumerable<(Identifier Name, UnitDefinition Type)> arguments
+        )
+            : this(returnType)
+        {
+            Parameters.AddRange(arguments);
+        }
+
+        public ISignature<UnitDefinition> Resolve()
+        {
+            return this;
         }
     }
 }

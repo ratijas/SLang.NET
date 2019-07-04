@@ -1,4 +1,3 @@
-using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
 using SLang.NET.Gen;
@@ -7,8 +6,10 @@ namespace SLang.NET.BuiltIns
 {
     public class StringBuiltInUnitDefinition : BuiltInUnitDefinition
     {
-        public StringBuiltInUnitDefinition(ModuleDefinition module)
-            : base(new Identifier("String"), module.TypeSystem.String)
+        public static readonly Identifier UnitName = new Identifier("String");
+
+        public StringBuiltInUnitDefinition(Context ctx)
+            : base(ctx, UnitName, ctx.NativeModule.TypeSystem.String)
         {
         }
 

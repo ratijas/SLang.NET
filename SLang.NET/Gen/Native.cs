@@ -6,6 +6,7 @@ using SR = System.Reflection;
 
 namespace SLang.NET.Gen
 {
+    // TODO: remove
     public class Native
     {
         private static Dictionary<string, SR.MethodInfo> _methods = new Dictionary<string, SR.MethodInfo>

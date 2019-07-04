@@ -1,50 +1,103 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
-using SLang.NET.BuiltIns;
+using MoreLinq;
 
 namespace SLang.NET.Gen
 {
     public class UnitReference
     {
-        public Identifier Name { get; protected set; }
+        public Identifier Name { get; }
+        public Context Context { get; }
+
+        public UnitReference(Context ctx, Identifier name)
+        {
+            Name = name;
+            Context = ctx;
+        }
+
+        public UnitReference(Context ctx, UnitRef unitRef) : this(ctx, unitRef.Name)
+        {
+        }
+
+        public virtual UnitDefinition Resolve()
+        {
+            return Context.Resolve(this);
+        }
+
+        public override string ToString()
+        {
+            return Name.ToString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is UnitReference other)
+            {
+                return Name.Equals(other.Name);
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
+        }
     }
 
     public abstract class UnitDefinition : UnitReference
     {
         public abstract bool IsNative { get; }
-        public ModuleDefinition NativeModule { get; protected set; }
-        public TypeDefinition NativeType { get; protected set; }
+        public TypeReference NativeType { get; protected set; }
         public List<RoutineDefinition> Routines { get; } = new List<RoutineDefinition>();
+
+        protected UnitDefinition(Context ctx, Identifier name) : base(ctx, name)
+        {
+        }
+
+        public override UnitDefinition Resolve()
+        {
+            return this;
+        }
+
+        public RoutineDefinition Resolve(RoutineReference routineReference)
+        {
+            try
+            {
+                return Routines.Single(routine => routine.Name.Equals(routineReference.Name));
+            }
+            catch (InvalidOperationException)
+            {
+                throw new RoutineNotFoundException(Context, routineReference);
+            }
+        }
+        
+        /// <summary>
+        /// Add routine and its native underlying method definition.
+        /// </summary>
+        /// <param name="routine">Routine definition</param>
+        internal void RegisterRoutine(RoutineDefinition routine)
+        {
+            Routines.Add(routine);
+        }
+
+        public virtual void Compile()
+        {
+        }
     }
 
     public abstract class BuiltInUnitDefinition : UnitDefinition
     {
         public sealed override bool IsNative => true;
-
-        public static BuiltInUnitDefinition Get(ModuleDefinition module, Identifier unit)
+        
+        protected BuiltInUnitDefinition(Context ctx, Identifier name, TypeReference underlyingType) : base(ctx, name)
         {
-            // TODO: cache dictionary
-            var dict = new Dictionary<Identifier, BuiltInUnitDefinition>();
-            BuiltInUnitDefinition u;
-            u = new IntegerBuiltInUnitDefinition(module);
-            dict.Add(u.Name, u);
-            u = new StringBuiltInUnitDefinition(module);
-            dict.Add(u.Name, u);
-
-            if (!dict.TryGetValue(unit, out var definition))
-                throw new NotImplementedException("Some built-in units are not implemented yet");
-
-            return definition;
-        }
-
-        protected BuiltInUnitDefinition(Identifier name, TypeReference underlyingType)
-        {
-            NativeType = underlyingType.Resolve();
-            NativeModule = NativeType.Module;
-            Name = name;
+            NativeType = ctx.NativeModule.ImportReference(underlyingType);
+            // no need to register unit within context, because context managed to do it itself
         }
 
         public abstract void LoadFromLiteral(string literal, ILProcessor ip);
@@ -56,29 +109,26 @@ namespace SLang.NET.Gen
 
         public const string SLangUnitDotNETNamespace = "SLang";
 
-        public SLangUnitDefinition(ModuleDefinition nativeModule, Identifier name)
+        public TypeDefinition NativeTypeDefinition { get; protected set; }
+
+        public SLangUnitDefinition(Context ctx, Identifier name) : base(ctx, name)
         {
-            Name = name;
-            NativeModule = nativeModule;
-            NativeType = new TypeDefinition(SLangUnitDotNETNamespace, Name.Value,
+            // low level
+            NativeTypeDefinition = new TypeDefinition(SLangUnitDotNETNamespace, Name.Value,
                 TypeAttributes.Public | TypeAttributes.Class,
-                NativeModule.TypeSystem.Object);
-            NativeModule.Types.Add(NativeType);
+                Context.NativeModule.TypeSystem.Object);
+            NativeType = NativeTypeDefinition;
+            
+            // need to explicitly tell context to register unit
+            Context.RegisterUnit(this);
         }
 
-        public RoutineDefinition DefineRoutine(Routine routine)
-        {
-            var routineDefinition = new SLangRoutineDefinition(NativeModule, this, routine);
-            NativeType.Methods.Add(routineDefinition.NativeMethod);
-            Routines.Add(routineDefinition);
-            return routineDefinition;
-        }
-
-        public void Compile()
+        public override void Compile()
         {
             foreach (var routine in Routines)
             {
                 routine.Compile();
+                NativeTypeDefinition.Methods.Add(routine.NativeMethod);
             }
         }
     }

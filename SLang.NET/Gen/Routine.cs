@@ -3,86 +3,123 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
 
-
 namespace SLang.NET.Gen
 {
-    public abstract class RoutineDefinition
+    public class RoutineReference
+    {
+        public Identifier Name { get; protected set; }
+
+        public UnitReference Unit { get; protected set; }
+
+        public Context Context { get; }
+
+        public RoutineReference(UnitReference unitReference, Identifier name)
+        {
+            Name = name;
+            Unit = unitReference;
+            Context = Unit.Context;
+        }
+
+        public virtual RoutineDefinition Resolve()
+        {
+            return Context.Resolve(this);
+        }
+
+        public override string ToString()
+        {
+            return $"{Unit}::{Name}";
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is RoutineReference other)
+            {
+                return Unit.Equals(other.Unit) && Name.Equals(other.Name);
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
+        }
+    }
+
+    public abstract class RoutineDefinition : RoutineReference
     {
         public abstract bool IsNative { get; }
-        public Identifier Name { get; protected set; }
-        public Signature Signature { get; protected set; }
-        public UnitDefinition Unit { get; protected set; }
-        public ModuleDefinition NativeModule { get; protected set; }
+        public ISignature<UnitReference> SignatureReference { get; protected set; }
+        public new UnitDefinition Unit { get; protected set; }
+        /// <summary>
+        /// Underlying native method. This property is null until Compile() is called.
+        /// </summary>
         public MethodDefinition NativeMethod { get; protected set; }
 
+        protected RoutineDefinition(UnitDefinition unit, Identifier name, ISignature<UnitReference> signature)
+            : base(unit, name)
+        {
+            Unit = unit;
+            SignatureReference = signature;
+        }
+
         public abstract void Compile();
+
+        public override RoutineDefinition Resolve()
+        {
+            return this;
+        }
     }
-    
+
     public class NativeRoutineDefinition : RoutineDefinition
     {
         public sealed override bool IsNative => true;
 
-        public NativeRoutineDefinition(Identifier name, UnitDefinition unitDefinition, MethodReference methodReference)
+        private MethodReference methodReference;
+
+        public NativeRoutineDefinition(
+            UnitDefinition unit,
+            Identifier name,
+            ISignature<UnitReference> signature,
+            MethodReference nativeMethod
+        )
+            : base(unit, name, signature)
         {
-            Name = name;
-            NativeMethod = methodReference.Resolve();
-            Unit = unitDefinition;
-            Signature = new Signature(methodReference);
-            // TODO
+            methodReference = nativeMethod;
         }
 
         public override void Compile()
         {
-            // do nothing
+            NativeMethod = methodReference.Resolve();
         }
     }
 
     public class SLangRoutineDefinition : RoutineDefinition
     {
         public sealed override bool IsNative => false;
-
-        public TypeDefinition NativeType => Unit.NativeType;
-        public Routine Routine { get; }
-
-        private TypeResolver resolver;
-
-        public SLangRoutineDefinition(ModuleDefinition nativeModule, UnitDefinition unit, Routine routine)
+        private Routine AST { get; }
+        
+        public SLangRoutineDefinition(
+            UnitDefinition unit,
+            Routine routine
+        )
+            : base(unit, routine.Name, new SignatureReference(unit.Context, routine))
         {
-            NativeModule = nativeModule;
-            Unit = unit;
-            Name = routine.Name;
-            Routine = routine;
-            resolver = new TypeResolver(NativeModule);
-
-            // Return type
-            var returnTypeRef = new TypeResolver(NativeModule).ResolveType(routine.ReturnType);
-            Signature = new Signature(returnTypeRef);
-
-            NativeMethod =
-                new MethodDefinition(
-                    routine.Name.Value,
-                    MethodAttributes.Public | MethodAttributes.Static,
-                    returnTypeRef);
-
-            // Arguments (parameters)
-            foreach (Routine.Argument argument in routine.Arguments)
-            {
-                var argType = resolver.ResolveType(argument.Type);
-                var param = new ParameterDefinition(argType) { Name = argument.Name.Value };
-                NativeMethod.Parameters.Add(param);
-                Signature.AddArgument(argType);
-            }
+            AST = routine;
+            // explicitly tell unit to add routine
+            unit.RegisterRoutine(this);
         }
-
+        
         // some globals to share between code generation functionality
         private ILProcessor ip;
 
         public override void Compile()
         {
-            Clear();
-            ip = NativeMethod.Body.GetILProcessor();
+            MakeMethodWithSignature();
             
-            foreach (var entity in Routine.Body)
+            ip = NativeMethod.Body.GetILProcessor();
+
+            foreach (var entity in AST.Body)
             {
                 switch (entity)
                 {
@@ -97,30 +134,54 @@ namespace SLang.NET.Gen
             ip = null;
         }
 
+        private void MakeMethodWithSignature()
+        {
+            var signature = SignatureReference.Resolve();
+
+            // name, attributes & return type
+            MethodAttributes attributes = MethodAttributes.Public | MethodAttributes.Static;
+            NativeMethod =
+                new MethodDefinition(
+                    Name.Value,
+                    attributes,
+                    signature.ReturnType.NativeType);
+
+            // parameters types
+            foreach (var (name, unit) in signature.Parameters)
+            {
+                var param = new ParameterDefinition(unit.NativeType) {Name = name.Value};
+                NativeMethod.Parameters.Add(param);
+            }
+        }
+
         private void GenerateReturn(Return r)
         {
             if (r.OptionalValue != null)
             {
                 var returnExpr = r.OptionalValue;
                 var returnVar = GenerateExpression(returnExpr);
-                
+
                 // TODO: in future replace with subclass IsAssignableFrom check
-                
-                // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-                if (!returnVar.VariableType.ToString().Equals(Signature.ReturnType.ToString()))
+                // XXX: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                if (!NativeMethod.ReturnType.FullName.Equals(returnVar.VariableType.FullName))
                 {
-                    throw new Exception($"Return type mismatch. Expected: {Signature.ReturnType}, actual: {returnVar.VariableType}");
+                    throw new Exception(
+                        $"Return type mismatch. Expected: {NativeMethod.ReturnType.FullName}, actual: {returnVar.VariableType.FullName}");
                 }
 
-                if (returnVar.VariableType != NativeModule.TypeSystem.Void)
+                if (!NativeMethod.ReturnType.FullName.Equals(Context.TypeSystem.Void.NativeType.FullName))
                 {
                     ip.Body.Variables.Add(returnVar);
                     ip.Emit(OpCodes.Ldloc, returnVar);
                 }
+                else
+                {
+                    Console.WriteLine($"Return type mismatch. Actual: {NativeMethod.ReturnType.FullName}, " +
+                                      $"Void is: {Context.TypeSystem.Void.NativeType.FullName}");
+                }
             }
 
             ip.Emit(OpCodes.Ret);
-
         }
 
         /// <summary>
@@ -130,30 +191,18 @@ namespace SLang.NET.Gen
         /// <returns>Index </returns>
         private VariableDefinition GenerateExpression(Expression expression)
         {
-            TypeReference tyRef = resolver.ResolveType(expression);
-            var result = new VariableDefinition(tyRef);
-
             switch (expression)
             {
                 case Literal literal:
-                    var literalType = BuiltInUnitDefinition.Get(NativeModule, literal.Type.Name);
-                    literalType.LoadFromLiteral(literal.Value, ip);
+                    var unit = Context.ResolveBuiltIn(new UnitReference(Context, literal.Type));
+                    var result = new VariableDefinition(unit.NativeType);
+                    unit.LoadFromLiteral(literal.Value, ip);
                     ip.Emit(OpCodes.Stloc, result);
-                    break;
+                    return result;
                 // TODO: more expression classes
                 default:
                     throw new NotImplementedException("Some expressions are not implemented");
             }
-
-            return result;
-        }
-
-        private void Clear()
-        {
-            var body = NativeMethod.Body;
-            body.Variables.Clear();
-            body.Instructions.Clear();
-            body.ExceptionHandlers.Clear();
         }
 
         private void FixInitLocals()

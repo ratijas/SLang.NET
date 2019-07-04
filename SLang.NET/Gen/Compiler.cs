@@ -11,17 +11,17 @@ namespace SLang.NET.Gen
         {
             var nameDef = new AssemblyNameDefinition(name, new Version(1, 0, 0, 0));
             var asm = AssemblyDefinition.CreateAssembly(nameDef, "SLangMainModule", ModuleKind.Console);
+
+            var context = new Context(asm.MainModule);
+
+            var globalAnonymousUnit =
+                context.GlobalUnit = new SLangUnitDefinition(context, new Identifier("SLang$GlobalUnit"));
+
+            var globalAnonymousRoutine = new SLangRoutineDefinition(globalAnonymousUnit, c.Anonymous);
             
-            var unit = new SLangUnitDefinition(asm.MainModule, new Identifier("SLang$Main"));
+            context.Compile();
 
-            c.Anonymous.Name = new Identifier("$Main");
-            var anonymousRoutine = unit.DefineRoutine(c.Anonymous);
-
-            unit.Compile();
-            
-            asm.EntryPoint = anonymousRoutine.NativeMethod;
-
-            asm.MainModule.ImportReference(typeof(Console).GetMethod(nameof(Console.WriteLine), new [] {typeof(int)}));
+            asm.EntryPoint = globalAnonymousRoutine.NativeMethod;
             
             return asm;
         }
