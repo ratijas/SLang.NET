@@ -23,7 +23,6 @@ namespace SLang.NET.Gen
         public Context(ModuleDefinition nativeModule)
         {
             NativeModule = nativeModule;
-//            Units.Add(GlobalUnit = SLangUnitDefinition.MakeGlobal(this));
             RegisterBuiltIns();
             TypeSystem = new TypeSystem(this);
         }
