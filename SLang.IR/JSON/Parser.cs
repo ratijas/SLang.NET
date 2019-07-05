@@ -46,8 +46,10 @@ namespace SLang.IR.JSON
             LITERAL = "LITERAL",
             CALL = "CALL",
             REFERENCE = "REFERENCE",
-            VARIABLE = "VARIABLE"
-            ;
+            VARIABLE = "VARIABLE",
+            UNIT = "UNIT",
+            REF_VAL_SPEC = "REF_VAL_SPEC",
+            CONCURRENT_SPEC = "CONCURRENT_SPEC";
 
         public Parser()
         {
@@ -68,6 +70,9 @@ namespace SLang.IR.JSON
                 {CALL, ParseCall},
                 {REFERENCE, ParseReference},
                 {VARIABLE, ParseVariable},
+                {UNIT, ParseUnit},
+                {REF_VAL_SPEC, ParseRefValSpec},
+                {CONCURRENT_SPEC, ParseConcurrentSpec},
             };
         }
 
@@ -274,6 +279,57 @@ namespace SLang.IR.JSON
             });
         }
 
+        private UnitDeclaration ParseUnit(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, UNIT);
+            EntityMixin.ValueMustBeNull(o);
+
+            return Guard(o, children =>
+            {
+                var name = children.OfType<Identifier>().Single();
+                var refValSpec = children.OfType<UnitDeclaration.RefValSpec>().Single();
+                var concurrentSpec = children.OfType<UnitDeclaration.ConcurrentSpec>().SingleOrDefault();
+                var concurrent = concurrentSpec?.Concurrent ?? false;
+                var foreignSpec = children.OfType<ForeignSpec>().SingleOrDefault();
+                var isForeign = foreignSpec?.IsForeign ?? false;
+                var declarations = children.OfType<DeclarationList>().SingleOrDefault()?.Declarations;
+                var invariants = children.OfType<ExpressionList>().SingleOrDefault()?.Expressions;
+
+                return new UnitDeclaration(name, refValSpec, concurrent, isForeign, declarations, invariants);
+            });
+        }
+
+        private UnitDeclaration.RefValSpec ParseRefValSpec(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, REF_VAL_SPEC);
+            EntityMixin.ValueMustNotBeNull(o);
+
+            switch (o.Value)
+            {
+                case "ref":
+                    return new UnitDeclaration.RefValSpec(isRef: true);
+                case "val":
+                    return new UnitDeclaration.RefValSpec(isRef: false);
+                default:
+                    throw new JsonFormatException(o, $"{REF_VAL_SPEC} must be either ref or val");
+            }
+        }
+
+        private UnitDeclaration.ConcurrentSpec ParseConcurrentSpec(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, CONCURRENT_SPEC);
+
+            switch (o.Value)
+            {
+                case null:
+                    return new UnitDeclaration.ConcurrentSpec(concurrent: false);
+                case "concurrent":
+                    return new UnitDeclaration.ConcurrentSpec(concurrent: true);
+                default:
+                    throw new JsonFormatException(o, $"{CONCURRENT_SPEC} must be either \"concurrent\" or null");
+            }
+        }
+        
         /// <summary>
         /// Guard against First/Single methods throwing on empty/too long sequences
         /// </summary>

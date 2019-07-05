@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace SLang.IR
 {
@@ -136,6 +137,67 @@ namespace SLang.IR
         {
             OptionalType = type;
             OptionalInitializer = initializer;
+        }
+    }
+
+    public class UnitDeclaration : Declaration
+    {
+        #region Internal classes
+
+        public class RefValSpec : Entity
+        {
+            public bool IsRef { get; set; }
+
+            [IgnoreDataMember]
+            public bool IsVal
+            {
+                get => !IsRef;
+                set => IsRef = !value;
+            }
+
+            public RefValSpec(bool isRef = true)
+            {
+                IsRef = isRef;
+            }
+        }
+
+        internal class ConcurrentSpec : Entity
+        {
+            public bool Concurrent { get; }
+
+            public ConcurrentSpec(bool concurrent)
+            {
+                Concurrent = concurrent;
+            }
+        }
+
+        #endregion
+
+        #region Members
+        
+        public RefValSpec RefOrVal { get; set; }
+        public bool IsConcurrent { get; set; }
+        public bool IsForeign { get; set; }
+        public List<Declaration> Declarations { get; } = new List<Declaration>();
+        public List<Expression> Invariants { get; } = new List<Expression>();
+        
+        #endregion
+
+        public UnitDeclaration(
+            Identifier name,
+            RefValSpec refOrVal,
+            bool isConcurrent,
+            bool isForeign,
+            IEnumerable<Declaration> declarations = null,
+            IEnumerable<Expression> invariants = null
+        )
+            : base(name)
+        {
+            RefOrVal = refOrVal;
+            IsConcurrent = isConcurrent;
+            IsForeign = isForeign;
+            if (declarations != null) Declarations.AddRange(declarations);
+            if (invariants != null) Invariants.AddRange(invariants);
         }
     }
 
