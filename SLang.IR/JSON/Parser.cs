@@ -98,7 +98,7 @@ namespace SLang.IR.JSON
             
             var children = ParseChildren(o).ToList();
             var declarations = children.OfType<DeclarationList>().FirstOrDefault()?.Declarations;
-            var routine = children.OfType<Routine>().FirstOrDefault();
+            var routine = children.OfType<RoutineDeclaration>().FirstOrDefault();
 
             return new Compilation(declarations, routine);
         }
@@ -119,7 +119,7 @@ namespace SLang.IR.JSON
             return new EntityList(ParseChildren(o).ToList());
         }
 
-        private Routine ParseRoutine(JsonEntity o)
+        private RoutineDeclaration ParseRoutine(JsonEntity o)
         {
             EntityMixin.CheckType(o, ROUTINE);
             EntityMixin.ValueMustBeNull(o);
@@ -131,7 +131,7 @@ namespace SLang.IR.JSON
                 // is foreign? (may be null in JSON but not in an object model)
                 var isForeign = children.OfType<ForeignSpec>().Select(spec => spec.IsForeign).DefaultIfEmpty(false).SingleOrDefault();
                 // argument list
-                var arguments = children.OfType<EntityList>().First().Children.Select(entity => new Routine.Argument(entity));
+                var arguments = children.OfType<EntityList>().First().Children.Select(entity => new RoutineDeclaration.Argument(entity));
                 // return type (may be null is JSON but not in an object model)
                 var returnType = children.OfType<UnitRef>().DefaultIfEmpty(UnitRef.Void).SingleOrDefault();
                 // precondition body (may be null)
@@ -142,7 +142,7 @@ namespace SLang.IR.JSON
                 var post = children.OfType<PostCondition>().DefaultIfEmpty(new PostCondition()).SingleOrDefault();
 
                 // ReSharper disable ArgumentsStyleNamedExpression
-                return new Routine(
+                return new RoutineDeclaration(
                     name: name,
                     isForeign: isForeign,
                     arguments: arguments,

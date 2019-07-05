@@ -46,9 +46,9 @@ namespace SLang.IR
     public class Compilation : Entity
     {
         public List<Declaration> Declarations { get; } = new List<Declaration>();
-        public Routine Anonymous { get; set; }
+        public RoutineDeclaration Anonymous { get; set; }
 
-        public Compilation(IEnumerable<Declaration> declarations, Routine anonymous)
+        public Compilation(IEnumerable<Declaration> declarations, RoutineDeclaration anonymous)
         {
             Declarations.AddRange(declarations);
             Anonymous = anonymous;
@@ -75,7 +75,7 @@ namespace SLang.IR
         }
     }
 
-    public class Routine : Declaration
+    public class RoutineDeclaration : Declaration
     {
         public bool IsForeign { get; set; }
         public List<Argument> Arguments { get; } = new List<Argument>();
@@ -84,7 +84,7 @@ namespace SLang.IR
         public List<Entity> Body { get; } = new List<Entity>();
         public PostCondition PostCondition { get; set; }
 
-        public Routine(
+        public RoutineDeclaration(
             Identifier name,
             bool isForeign,
             IEnumerable<Argument> arguments,

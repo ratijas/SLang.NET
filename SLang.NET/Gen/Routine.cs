@@ -97,11 +97,11 @@ namespace SLang.NET.Gen
     public class SLangRoutineDefinition : RoutineDefinition
     {
         public sealed override bool IsNative => false;
-        private Routine AST { get; }
+        private RoutineDeclaration AST { get; }
         
         public SLangRoutineDefinition(
             UnitDefinition unit,
-            Routine routine
+            RoutineDeclaration routine
         )
             : base(unit, routine.Name, new SignatureReference(unit.Context, routine))
         {

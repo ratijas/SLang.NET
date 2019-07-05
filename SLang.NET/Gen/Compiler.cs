@@ -23,7 +23,7 @@ namespace SLang.NET.Gen
             {
                 switch (declaration)
                 {
-                    case Routine routine:
+                    case RoutineDeclaration routine:
                     {
                         var _ = new SLangRoutineDefinition(globalAnonymousUnit, routine);
                         break;

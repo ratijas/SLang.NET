@@ -129,7 +129,7 @@ namespace SLang.NET.Gen
             {
                 switch (declaration)
                 {
-                    case Routine routine:
+                    case RoutineDeclaration routine:
                         // TODO: check is native
                         var _ = new SLangRoutineDefinition(this, routine);
                         break;

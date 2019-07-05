@@ -33,7 +33,7 @@ namespace SLang.NET.Gen
             ReturnType = returnType;
         }
 
-        public SignatureReference(Context ctx, Routine routine)
+        public SignatureReference(Context ctx, RoutineDeclaration routine)
         {
             ReturnType = new UnitReference(ctx, routine.ReturnType);
             Parameters.AddRange(routine.Arguments.Select(argument =>
