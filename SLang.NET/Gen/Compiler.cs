@@ -29,6 +29,12 @@ namespace SLang.NET.Gen
                         break;
                     }
 
+                    case UnitDeclaration unit:
+                    {
+                        var _ = new SLangUnitDefinition(context, unit);
+                        break;
+                    }
+
                     default:
                         throw new NotImplementedException("only routine declarations are supported");
                 }

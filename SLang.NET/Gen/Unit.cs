@@ -123,6 +123,23 @@ namespace SLang.NET.Gen
             Context.RegisterUnit(this);
         }
 
+        public SLangUnitDefinition(Context ctx, UnitDeclaration ir) : this(ctx, ir.Name)
+        {
+            foreach (var declaration in ir.Declarations)
+            {
+                switch (declaration)
+                {
+                    case Routine routine:
+                        // TODO: check is native
+                        var _ = new SLangRoutineDefinition(this, routine);
+                        break;
+
+                    default:
+                        throw new NotImplementedException("only routines declarations are supported within units");
+                }
+            }
+        }
+
         public override void Compile()
         {
             foreach (var routine in Routines)
