@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Mono.Cecil;
 using SLang.IR;
 
 namespace SLang.NET.Gen
@@ -31,6 +30,18 @@ namespace SLang.NET.Gen
         public SignatureReference(UnitReference returnType)
         {
             ReturnType = returnType;
+        }
+        
+        public SignatureReference(UnitReference returnType, IEnumerable<UnitReference> parameters)
+        {
+            ReturnType = returnType;
+            Parameters.AddRange(parameters.Select(p => (new Identifier(string.Empty), p)));
+        }
+        
+        public SignatureReference(UnitReference returnType, IEnumerable<(Identifier Name, UnitReference Type)> parameters)
+        {
+            ReturnType = returnType;
+            Parameters.AddRange(parameters);
         }
 
         public SignatureReference(Context ctx, RoutineDeclaration routine)
