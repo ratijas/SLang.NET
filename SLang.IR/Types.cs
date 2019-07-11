@@ -316,20 +316,36 @@ namespace SLang.IR
 
     public class Call : Secondary
     {
-        public Expression Callee { get; set; }
+        public Callee Callee { get; set; }
         public List<Expression> Arguments { get; } = new List<Expression>();
 
-        public Call(Expression callee, IEnumerable<Expression> arguments)
+        public Call(Callee callee, IEnumerable<Expression> arguments)
         {
             Callee = callee;
             Arguments.AddRange(arguments);
         }
 
-        internal Call(Expression callee, ExpressionList arguments = null)
+        internal Call(Callee callee, ExpressionList arguments = null)
         {
             Callee = callee;
             if (arguments != null)
                 Arguments.AddRange(arguments.Expressions);
+        }
+    }
+
+    public class Callee : Expression
+    {
+        /// <summary>
+        /// Declaring Unit. Must be null for global routines.
+        /// </summary>
+        public Identifier Unit { get; set; }
+
+        public Identifier Routine { get; set; }
+        
+        public Callee(Identifier unit, Identifier routine)
+        {
+            Unit = unit;
+            Routine = routine;
         }
     }
 }

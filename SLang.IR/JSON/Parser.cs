@@ -45,6 +45,7 @@ namespace SLang.IR.JSON
             RETURN = "RETURN",
             LITERAL = "LITERAL",
             CALL = "CALL",
+            CALLEE = "CALLEE",
             REFERENCE = "REFERENCE",
             VARIABLE = "VARIABLE",
             UNIT = "UNIT",
@@ -68,6 +69,7 @@ namespace SLang.IR.JSON
                 {RETURN, ParseReturn},
                 {LITERAL, ParseLiteral},
                 {CALL, ParseCall},
+                {CALLEE, ParseCallee},
                 {REFERENCE, ParseReference},
                 {VARIABLE, ParseVariable},
                 {UNIT, ParseUnit},
@@ -240,11 +242,22 @@ namespace SLang.IR.JSON
 
             return Guard(o, children =>
             {
-                var callee = children.OfType<Expression>().Single();
+                var callee = children.OfType<Callee>().Single();
                 var arguments = children.OfType<ExpressionList>().SingleOrDefault();
 
                 return new Call(callee, arguments);
             });
+        }
+
+        private Callee ParseCallee(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, CALLEE);
+            EntityMixin.ValueMustBeNull(o);
+
+            var unit = o.Children[0] == null ? null : ParseIdentifier(o.Children[0]);
+            var routine = ParseIdentifier(o.Children[1]);
+
+            return new Callee(unit, routine);
         }
 
         private Reference ParseReference(JsonEntity o)
@@ -257,8 +270,6 @@ namespace SLang.IR.JSON
                 var name = children.OfType<Identifier>().Single();
 
                 return new Reference(name);
-                // TODO: example and parser source code mismatch
-                throw new NotImplementedException("example and parser source code mismatch");
             });
         }
 
@@ -329,7 +340,7 @@ namespace SLang.IR.JSON
                     throw new JsonFormatException(o, $"{CONCURRENT_SPEC} must be either \"concurrent\" or null");
             }
         }
-        
+
         /// <summary>
         /// Guard against First/Single methods throwing on empty/too long sequences
         /// </summary>
