@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Mono.Cecil;
-using MoreLinq;
 using SLang.IR;
 using SLang.NET.BuiltIns;
 
@@ -84,7 +83,8 @@ namespace SLang.NET.Gen
 
         public void Compile()
         {
-            Units.ForEach(unit => unit.Compile());
+            Units.ForEach(unit => unit.Stage1CompileStubs());
+            Units.ForEach(unit => unit.Stage2CompileBody());
         }
     }
 

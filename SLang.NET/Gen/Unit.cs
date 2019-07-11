@@ -4,7 +4,6 @@ using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
-using MoreLinq;
 
 namespace SLang.NET.Gen
 {
@@ -49,7 +48,7 @@ namespace SLang.NET.Gen
         }
     }
 
-    public abstract class UnitDefinition : UnitReference
+    public abstract class UnitDefinition : UnitReference, IStagedCompilation
     {
         public abstract bool IsNative { get; }
         public TypeReference NativeType { get; protected set; }
@@ -85,9 +84,8 @@ namespace SLang.NET.Gen
             Routines.Add(routine);
         }
 
-        public virtual void Compile()
-        {
-        }
+        public abstract void Stage1CompileStubs();
+        public abstract void Stage2CompileBody();
     }
 
     public abstract class BuiltInUnitDefinition : UnitDefinition
@@ -101,6 +99,11 @@ namespace SLang.NET.Gen
         }
 
         public abstract void LoadFromLiteral(string literal, ILProcessor ip);
+        
+        public override void Stage1CompileStubs()
+        {}
+        public override void Stage2CompileBody()
+        {}
     }
 
     public class SLangUnitDefinition : UnitDefinition
@@ -140,12 +143,20 @@ namespace SLang.NET.Gen
             }
         }
 
-        public override void Compile()
+        public override void Stage1CompileStubs()
         {
             foreach (var routine in Routines)
             {
-                routine.Compile();
+                routine.Stage1CompileStubs();
                 NativeTypeDefinition.Methods.Add(routine.NativeMethod);
+            }
+        }
+
+        public override void Stage2CompileBody()
+        {
+            foreach (var routine in Routines)
+            {
+                routine.Stage2CompileBody();
             }
         }
     }

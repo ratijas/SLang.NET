@@ -30,4 +30,18 @@ namespace SLang.NET.Gen
             Routine = routine;
         }
     }
+
+    public class CompilationStageException : CompilerException
+    {
+        public Context Context { get; }
+        public RoutineDefinition Routine { get; }
+        public int Stage { get; }
+
+        public CompilationStageException(Context ctx, RoutineDefinition routine, int stage = 0)
+        {
+            Context = ctx;
+            Routine = routine;
+            Stage = stage;
+        }
+    }
 }

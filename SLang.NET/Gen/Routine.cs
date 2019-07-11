@@ -46,7 +46,7 @@ namespace SLang.NET.Gen
         }
     }
 
-    public abstract class RoutineDefinition : RoutineReference
+    public abstract class RoutineDefinition : RoutineReference, IStagedCompilation
     {
         public abstract bool IsNative { get; }
         public ISignature<UnitReference> SignatureReference { get; protected set; }
@@ -63,12 +63,13 @@ namespace SLang.NET.Gen
             SignatureReference = signature;
         }
 
-        public abstract void Compile();
-
         public override RoutineDefinition Resolve()
         {
             return this;
         }
+
+        public abstract void Stage1CompileStubs();
+        public abstract void Stage2CompileBody();
     }
 
     public class NativeRoutineDefinition : RoutineDefinition
@@ -88,9 +89,14 @@ namespace SLang.NET.Gen
             methodReference = nativeMethod;
         }
 
-        public override void Compile()
+        public override void Stage1CompileStubs()
         {
             NativeMethod = methodReference.Resolve();
+        }
+
+        public override void Stage2CompileBody()
+        {
+            // do nothing
         }
     }
 
@@ -113,10 +119,16 @@ namespace SLang.NET.Gen
         // some globals to share between code generation functionality
         private ILProcessor ip;
 
-        public override void Compile()
+        public override void Stage1CompileStubs()
         {
             MakeMethodWithSignature();
-            
+        }
+
+        public override void Stage2CompileBody()
+        {
+            if (NativeMethod == null)
+                throw new CompilationStageException(Context, this, 2);
+
             ip = NativeMethod.Body.GetILProcessor();
 
             foreach (var entity in AST.Body)
