@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
@@ -9,15 +10,42 @@ namespace SLang.NET.Gen
     {
         public Identifier Name { get; protected set; }
 
+        /// <summary>
+        /// Unit reference applies to routines declared within SLang Units.
+        /// Global routines do not have explicit unit binding -- instead they are defined within
+        /// special "$Runtime" unit, and only black magic of Context shall be able to resolve those.
+        ///
+        /// With that being said, UnitReference may be null, but after Resolve() UnitDefinition is always set.
+        /// </summary>
         public UnitReference Unit { get; protected set; }
 
         public Context Context { get; }
+
+        /// <summary>
+        /// Global routines are always static. Routines declared within units must be marked as static explicitly.
+        /// Default value `true` is provided as a temporary measure until IR supports such modifier.
+        /// </summary>
+        public bool IsStatic { get; set; } = true;
 
         public RoutineReference(UnitReference unitReference, Identifier name)
         {
             Name = name;
             Unit = unitReference;
             Context = Unit.Context;
+        }
+
+        public RoutineReference(Context ctx, Identifier name)
+        {
+            Name = name;
+            Unit = null;
+            Context = ctx;
+        }
+
+        public RoutineReference(Context ctx, Callee callee)
+        {
+            Name = callee.Routine;
+            Unit = callee.Unit == null ? null : new UnitReference(ctx, callee.Unit);
+            Context = ctx;
         }
 
         public virtual RoutineDefinition Resolve()
@@ -27,7 +55,7 @@ namespace SLang.NET.Gen
 
         public override string ToString()
         {
-            return $"{Unit}::{Name}";
+            return Unit == null ? $"::{Name}" : $"{Unit}::{Name}";
         }
 
         public override bool Equals(object obj)
@@ -173,23 +201,21 @@ namespace SLang.NET.Gen
                 var returnExpr = r.OptionalValue;
                 var returnVar = GenerateExpression(returnExpr);
 
-                // TODO: in future replace with subclass IsAssignableFrom check
-                // XXX: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-                if (!NativeMethod.ReturnType.FullName.Equals(returnVar.VariableType.FullName))
-                {
-                    throw new Exception(
-                        $"Return type mismatch. Expected: {NativeMethod.ReturnType.FullName}, actual: {returnVar.VariableType.FullName}");
-                }
+                var exprTypeName = returnVar.VariableType.FullName;
+                var methodTypeName = NativeMethod.ReturnType.FullName;
 
-                if (!NativeMethod.ReturnType.FullName.Equals(Context.TypeSystem.Void.NativeType.FullName))
+                if (!methodTypeName.Equals(exprTypeName))
+                    throw new Exception($"Return type mismatch. Expected: {NativeMethod.ReturnType.FullName}, " +
+                                        $"actual: {returnVar.VariableType.FullName}");
+
+                else if (!methodTypeName.Equals(Context.TypeSystem.Void.NativeType.FullName))
                 {
                     ip.Body.Variables.Add(returnVar);
                     ip.Emit(OpCodes.Ldloc, returnVar);
                 }
                 else
                 {
-                    Console.WriteLine($"Return type mismatch. Actual: {NativeMethod.ReturnType.FullName}, " +
-                                      $"Void is: {Context.TypeSystem.Void.NativeType.FullName}");
+                    // void method returning with void routine.  do nothing.
                 }
             }
 
@@ -203,18 +229,52 @@ namespace SLang.NET.Gen
         /// <returns>Index </returns>
         private VariableDefinition GenerateExpression(Expression expression)
         {
+            VariableDefinition result;
             switch (expression)
             {
                 case Literal literal:
                     var unit = Context.ResolveBuiltIn(new UnitReference(Context, literal.Type));
-                    var result = new VariableDefinition(unit.NativeType);
+                    result = new VariableDefinition(unit.NativeType);
                     unit.LoadFromLiteral(literal.Value, ip);
                     ip.Emit(OpCodes.Stloc, result);
                     return result;
+                case Call call:
+                    var routine = GenerateCall(call);
+                    if (routine.SignatureReference.ReturnType.Resolve().Equals(Context.TypeSystem.Void))
+                    {
+                        ip.Emit(OpCodes.Nop);
+                        return new VariableDefinition(Context.TypeSystem.Void.NativeType);
+                    }
+                    else
+                    {
+                        result = new VariableDefinition(routine.NativeMethod.ReturnType);
+                        ip.Emit(OpCodes.Stloc, result);
+                        return result;
+                    }
                 // TODO: more expression classes
                 default:
                     throw new NotImplementedException("Some expressions are not implemented");
             }
+        }
+
+        /// <summary>
+        /// Generates call to a routine, leaving returned value on the stack.
+        /// </summary>
+        /// <param name="call"></param>
+        /// <returns>Resolved routine definition</returns>
+        /// <exception cref="NotImplementedException"></exception>
+        private RoutineDefinition GenerateCall(Call call)
+        {
+            if (call.Callee.Unit != null)
+                throw new NotImplementedException("Unit routines are not implemented yet.");
+
+            var routine = new RoutineReference(Context, call.Callee).Resolve();
+            
+            if (call.Arguments.Any())
+                throw new NotImplementedException("Passing arguments to routines is not implemented yet.");
+
+            ip.Emit(OpCodes.Call, routine.NativeMethod);
+            return routine;
         }
 
         private void FixInitLocals()

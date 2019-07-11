@@ -15,6 +15,8 @@ namespace SLang.NET.Gen
 
         public List<BuiltInUnitDefinition> BuiltInUnits { get; } = new List<BuiltInUnitDefinition>();
 
+        public SLangUnitDefinition Runtime { get; }
+
         public ModuleDefinition NativeModule { get; }
 
         public TypeSystem TypeSystem { get; }
@@ -22,8 +24,9 @@ namespace SLang.NET.Gen
         public Context(ModuleDefinition nativeModule)
         {
             NativeModule = nativeModule;
-            RegisterBuiltIns();
             TypeSystem = new TypeSystem(this);
+            Runtime = new SLangUnitDefinition(this, new Identifier("$Runtime"));
+            RegisterBuiltIns();
         }
 
         private void RegisterBuiltIns()
@@ -65,8 +68,22 @@ namespace SLang.NET.Gen
 
         public RoutineDefinition Resolve(RoutineReference routineReference)
         {
-            var unit = Resolve(routineReference.Unit);
-            return unit.Resolve(routineReference);
+            if (routineReference.Unit != null)
+            {
+                var unit = routineReference.Unit.Resolve();
+                return unit.Resolve(routineReference);
+            }
+            else
+            {
+                try
+                {
+                    return GlobalUnit.Resolve(routineReference);
+                }
+                catch (RoutineNotFoundException)
+                {
+                    return Runtime.Resolve(routineReference);
+                }
+            }
         }
 
         public BuiltInUnitDefinition ResolveBuiltIn(UnitReference unitReference)

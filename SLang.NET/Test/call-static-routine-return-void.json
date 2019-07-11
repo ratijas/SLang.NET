@@ -1,0 +1,84 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": [
+        {
+          "type": "ROUTINE",
+          "children": [
+            {
+              "type": "IDENTIFIER",
+              "value": "global_routine_which_returns_nothing",
+              "children": []
+            },
+            null,
+            {
+              "type": "ENTITY_LIST"
+            },
+            null,
+            null,
+            {
+              "type": "ENTITY_LIST",
+              "value": null,
+              "children": [
+                {
+                  "type": "RETURN",
+                  "children": [
+                    null
+                  ]
+                }
+              ]
+            },
+            null
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous",
+          "children": []
+        },
+        null,
+        {
+          "type": "ENTITY_LIST"
+        },
+        null,
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "value": null,
+          "children": [
+            {
+              "type": "RETURN",
+              "children": [
+                {
+                  "type": "CALL",
+                  "value": null,
+                  "children": [
+                    {
+                      "type": "CALLEE",
+                      "value": null,
+                      "children": [
+                        null,
+                        {
+                          "type": "IDENTIFIER",
+                          "value": "global_routine_which_returns_nothing"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}

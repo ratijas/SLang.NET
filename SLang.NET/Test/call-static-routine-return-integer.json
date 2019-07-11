@@ -1,0 +1,99 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": [
+        {
+          "type": "ROUTINE",
+          "children": [
+            {
+              "type": "IDENTIFIER",
+              "value": "global_routine_which_returns_integer",
+              "children": []
+            },
+            null,
+            {
+              "type": "ENTITY_LIST"
+            },
+            {
+              "type":"UNIT_REF",
+              "value":"Integer"
+            },
+            null,
+            {
+              "type":"ENTITY_LIST",
+              "value":null,
+              "children":[
+                {
+                  "type":"RETURN",
+                  "children":[
+                    {
+                      "type":"LITERAL",
+                      "value":"4294967297",
+                      "children":[
+                        {
+                          "type":"UNIT_REF",
+                          "value":"Integer"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            null
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous",
+          "children": []
+        },
+        null,
+        {
+          "type": "ENTITY_LIST"
+        },
+        {
+          "type":"UNIT_REF",
+          "value":"Integer"
+        },
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "value": null,
+          "children": [
+            {
+              "type": "RETURN",
+              "children": [
+                {
+                  "type": "CALL",
+                  "value": null,
+                  "children": [
+                    {
+                      "type": "CALLEE",
+                      "value": null,
+                      "children": [
+                        null,
+                        {
+                          "type": "IDENTIFIER",
+                          "value": "global_routine_which_returns_integer"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}
