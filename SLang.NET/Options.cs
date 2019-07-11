@@ -27,12 +27,19 @@ namespace SLang.NET
         )]
         public FileInfo Input { get; set; }
 
+        private FileInfo _output;
+        
         [Option(
             'o',
             "output",
             Required = false,
             HelpText =
-                "The path to the output *.dll assembly. The default is out.dll in the current working directory.")]
-        public FileInfo Output { get; set; } = new FileInfo("out.dll");
+                "The path to the output *.dll assembly. " +
+                "The default is input with `.json` extension replaced by `.dll`.")]
+        public FileInfo Output
+        {
+            get => _output ?? new FileInfo(Path.ChangeExtension(Input.ToString(), ".dll"));
+            set => _output = value;
+        }
     }
 }
