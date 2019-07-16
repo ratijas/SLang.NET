@@ -1,7 +1,5 @@
-using System;
 using System.IO;
 using CommandLine;
-using CommandLine.Text;
 
 namespace SLang.NET
 {

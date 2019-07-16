@@ -2,7 +2,6 @@ using System;
 
 namespace SLang.NET.Gen
 {
-
     public class CompilerException : Exception
     {
     }

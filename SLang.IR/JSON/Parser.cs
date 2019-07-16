@@ -11,16 +11,17 @@ namespace SLang.IR.JSON
             if (json.Type != type)
                 throw new JsonFormatException(json, $"type expected to be {type}");
         }
+
         public static void ValueMustBeNull(JsonEntity json)
         {
             if (json.Value != null)
                 throw new JsonFormatException(json, "value must be null");
         }
+
         public static void ValueMustNotBeNull(JsonEntity json)
         {
             if (json.Value == null)
                 throw new JsonFormatException(json, "value must not be null");
-            
         }
     }
 
@@ -97,7 +98,7 @@ namespace SLang.IR.JSON
         {
             EntityMixin.CheckType(o, COMPILATION);
             EntityMixin.ValueMustBeNull(o);
-            
+
             var children = ParseChildren(o).ToList();
             var declarations = children.OfType<DeclarationList>().FirstOrDefault()?.Declarations;
             var routine = children.OfType<RoutineDeclaration>().FirstOrDefault();
@@ -131,9 +132,11 @@ namespace SLang.IR.JSON
                 // name
                 var name = children.OfType<Identifier>().Single();
                 // is foreign? (may be null in JSON but not in an object model)
-                var isForeign = children.OfType<ForeignSpec>().Select(spec => spec.IsForeign).DefaultIfEmpty(false).SingleOrDefault();
+                var isForeign = children.OfType<ForeignSpec>().Select(spec => spec.IsForeign).DefaultIfEmpty(false)
+                    .SingleOrDefault();
                 // argument list
-                var arguments = children.OfType<EntityList>().First().Children.Select(entity => new RoutineDeclaration.Argument(entity));
+                var arguments = children.OfType<EntityList>().First().Children
+                    .Select(entity => new RoutineDeclaration.Argument(entity));
                 // return type (may be null is JSON but not in an object model)
                 var returnType = children.OfType<UnitRef>().DefaultIfEmpty(UnitRef.Void).SingleOrDefault();
                 // precondition body (may be null)
@@ -174,7 +177,7 @@ namespace SLang.IR.JSON
             EntityMixin.CheckType(o, IDENTIFIER);
             EntityMixin.ValueMustNotBeNull(o);
             if (string.IsNullOrEmpty(o.Value)) throw new JsonFormatException(o, "Identifier must not be empty");
-            
+
             return new Identifier(o.Value);
         }
 
@@ -183,7 +186,7 @@ namespace SLang.IR.JSON
             EntityMixin.CheckType(o, UNIT_REF);
             EntityMixin.ValueMustNotBeNull(o);
             if (string.IsNullOrEmpty(o.Value)) throw new JsonFormatException(o, "Unit Ref must not be empty");
-            
+
             return new UnitRef(new Identifier(o.Value));
         }
 
@@ -199,9 +202,9 @@ namespace SLang.IR.JSON
         {
             EntityMixin.CheckType(o, PRECONDITION);
             EntityMixin.ValueMustBeNull(o);
-            
+
             var expressions = ParseChildren(o).OfType<ExpressionList>().FirstOrDefault();
-            
+
             return new PreCondition(expressions);
         }
 
@@ -209,9 +212,9 @@ namespace SLang.IR.JSON
         {
             EntityMixin.CheckType(o, POSTCONDITION);
             EntityMixin.ValueMustBeNull(o);
-            
+
             var expressions = ParseChildren(o).OfType<ExpressionList>().FirstOrDefault();
-            
+
             return new PostCondition(expressions);
         }
 
@@ -228,7 +231,7 @@ namespace SLang.IR.JSON
         {
             EntityMixin.CheckType(o, LITERAL);
             EntityMixin.ValueMustNotBeNull(o);
-            
+
             var unitRef = ParseChildren(o).OfType<UnitRef>().FirstOrDefault();
             if (unitRef == null) throw new JsonFormatException(o, "literal unit reference not found");
 
@@ -277,7 +280,7 @@ namespace SLang.IR.JSON
         {
             EntityMixin.CheckType(o, VARIABLE);
             EntityMixin.ValueMustBeNull(o);
-            
+
             return Guard(o, children =>
             {
                 var name = children.OfType<Identifier>().Single();

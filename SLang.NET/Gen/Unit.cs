@@ -74,7 +74,7 @@ namespace SLang.NET.Gen
                 throw new RoutineNotFoundException(Context, routineReference);
             }
         }
-        
+
         /// <summary>
         /// Add routine and its native underlying method definition.
         /// </summary>
@@ -91,7 +91,7 @@ namespace SLang.NET.Gen
     public abstract class BuiltInUnitDefinition : UnitDefinition
     {
         public sealed override bool IsNative => true;
-        
+
         protected BuiltInUnitDefinition(Context ctx, Identifier name, TypeReference underlyingType) : base(ctx, name)
         {
             NativeType = ctx.NativeModule.ImportReference(underlyingType);
@@ -99,11 +99,14 @@ namespace SLang.NET.Gen
         }
 
         public abstract void LoadFromLiteral(string literal, ILProcessor ip);
-        
+
         public override void Stage1CompileStubs()
-        {}
+        {
+        }
+
         public override void Stage2CompileBody()
-        {}
+        {
+        }
     }
 
     public class SLangUnitDefinition : UnitDefinition
@@ -121,7 +124,7 @@ namespace SLang.NET.Gen
                 TypeAttributes.Public | TypeAttributes.Class,
                 Context.NativeModule.TypeSystem.Object);
             NativeType = NativeTypeDefinition;
-            
+
             // need to explicitly tell context to register unit
             Context.RegisterUnit(this);
         }

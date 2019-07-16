@@ -79,6 +79,7 @@ namespace SLang.NET.Gen
         public abstract bool IsNative { get; }
         public ISignature<UnitReference> SignatureReference { get; protected set; }
         public new UnitDefinition Unit { get; protected set; }
+
         /// <summary>
         /// Underlying native method. This property is null until Compile() is called.
         /// </summary>
@@ -132,7 +133,7 @@ namespace SLang.NET.Gen
     {
         public sealed override bool IsNative => false;
         private RoutineDeclaration AST { get; }
-        
+
         public SLangRoutineDefinition(
             UnitDefinition unit,
             RoutineDeclaration routine
@@ -143,7 +144,7 @@ namespace SLang.NET.Gen
             // explicitly tell unit to add routine
             unit.RegisterRoutine(this);
         }
-        
+
         // some globals to share between code generation functionality
         private ILProcessor ip;
 
@@ -251,6 +252,7 @@ namespace SLang.NET.Gen
                         ip.Emit(OpCodes.Stloc, result);
                         return result;
                     }
+
                 // TODO: more expression classes
                 default:
                     throw new NotImplementedException("Some expressions are not implemented");
@@ -269,7 +271,7 @@ namespace SLang.NET.Gen
                 throw new NotImplementedException("Unit routines are not implemented yet.");
 
             var routine = new RoutineReference(Context, call.Callee).Resolve();
-            
+
             if (call.Arguments.Any())
                 throw new NotImplementedException("Passing arguments to routines is not implemented yet.");
 

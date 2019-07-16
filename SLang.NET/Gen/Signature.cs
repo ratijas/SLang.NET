@@ -31,14 +31,17 @@ namespace SLang.NET.Gen
         {
             ReturnType = returnType;
         }
-        
+
         public SignatureReference(UnitReference returnType, IEnumerable<UnitReference> parameters)
         {
             ReturnType = returnType;
             Parameters.AddRange(parameters.Select(p => (new Identifier(string.Empty), p)));
         }
-        
-        public SignatureReference(UnitReference returnType, IEnumerable<(Identifier Name, UnitReference Type)> parameters)
+
+        public SignatureReference(
+            UnitReference returnType,
+            IEnumerable<(Identifier Name, UnitReference Type)> parameters
+        )
         {
             ReturnType = returnType;
             Parameters.AddRange(parameters);

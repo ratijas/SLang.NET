@@ -174,13 +174,13 @@ namespace SLang.IR
         #endregion
 
         #region Members
-        
+
         public RefValSpec RefOrVal { get; set; }
         public bool IsConcurrent { get; set; }
         public bool IsForeign { get; set; }
         public List<Declaration> Declarations { get; } = new List<Declaration>();
         public List<Expression> Invariants { get; } = new List<Expression>();
-        
+
         #endregion
 
         public UnitDeclaration(
@@ -341,7 +341,7 @@ namespace SLang.IR
         public Identifier Unit { get; set; }
 
         public Identifier Routine { get; set; }
-        
+
         public Callee(Identifier unit, Identifier routine)
         {
             Unit = unit;
