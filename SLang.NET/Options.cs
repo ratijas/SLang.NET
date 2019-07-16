@@ -41,5 +41,11 @@ namespace SLang.NET
             get => _output ?? new FileInfo(Path.ChangeExtension(Input.ToString(), ".dll"));
             set => _output = value;
         }
+
+        [Option(
+            "ast",
+            Required = false,
+            HelpText = "Dump internal AST in JSON format to the specified file.")]
+        public FileInfo Ast { get; set; }
     }
 }
