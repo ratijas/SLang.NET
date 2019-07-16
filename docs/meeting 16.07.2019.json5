@@ -1,0 +1,73 @@
+[ // итоги митинга
+
+  // объявление рутин не имело четко определенного синтаксиса и семантики как в
+  // оригинальных документах по JSON IR, так и в коде парсера SLang.
+
+  // в частности, объявление параметров технически принимало вид List<Entity>,
+  // т.е. список абсолютно чего угодно, и не имело примеров использования.
+
+  // в ходе митинга было решено:
+
+  // 1. заменить тип Entity параметров на "PARAMETER_LIST";
+  // 2. потомки "PARAMETER_LIST" имеют тип "PARAMETER";
+  // 3. сущность "PARAMETER" на данный момент (для упрощения опущены все
+  //    возможные квалификаторы) состоит из двух частей:
+  // 3.1 Type -- тип параметра
+  // 3.1 Identifier -- имя параметра
+
+  // 4.1 абстрактная стуктура декларации рутины с параметрами
+  {
+    "parameters": [
+      {
+        "type": "Integer",
+        "name": "x",
+      },
+      {
+        "type": "MyLib.MyAwesomeUnit",
+        "name": "stuff"
+      }
+    ],
+    // other routine stuff...
+  },
+  // 4.2 структура IR в рамках текущего стиля формирования дерева JSON
+  {
+    "type": "ROUTINE",
+    "children": [
+      // other routine stuff...
+
+      { // parameters list
+        "type": "PARAMETER_LIST",
+        "children": [
+          { // x: Integer
+            "type": "PARAMETER",
+            "children": [
+              { // abstract type, e.g. UNIT_REF,
+                "type": "UNIT_REF",
+                "value": "Integer",
+              },
+              {
+                "type": "IDENTIFIER",
+                "value": "x",
+              }
+            ]
+          },
+          { // stuff: MyLib.MyAwesomeUnit
+            "type": "PARAMETER",
+            "children": [
+              {
+                "type": "UNIT_REF",
+                "value": "MyLib.MyAwesomeUnit"
+              },
+              {
+                "type": "IDENTIFIER",
+                "value": "stuff",
+              }
+            ]
+          }
+        ]
+      } // end of parameter list
+      // other routine stuff...
+    ]
+  } // end of routine
+
+] // конец митинга
