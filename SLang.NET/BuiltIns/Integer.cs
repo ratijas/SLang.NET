@@ -10,16 +10,16 @@ namespace SLang.NET.BuiltIns
         public static readonly Identifier UnitName = new Identifier("Integer");
 
         public IntegerBuiltInUnitDefinition(Context ctx)
-            : base(ctx, UnitName, ctx.NativeModule.TypeSystem.Int64)
+            : base(ctx, UnitName, ctx.NativeModule.TypeSystem.Int32)
         {
         }
 
         public override void LoadFromLiteral(string literal, ILProcessor ip)
         {
-            if (!long.TryParse(literal, out var result))
+            if (!int.TryParse(literal, out var result))
                 throw new FormatException($"Unable to parse integer literal: '{literal}'");
 
-            ip.Emit(OpCodes.Ldc_I8, result);
+            ip.Emit(OpCodes.Ldc_I4, result);
         }
     }
 }
