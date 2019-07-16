@@ -1,5 +1,3 @@
-using System;
-
 namespace SLang.NET.Test
 {
     public class Report
@@ -10,9 +8,12 @@ namespace SLang.NET.Test
         public string ParserError = string.Empty;
 
         public bool CompilerPass = true;
-        public string CompilerError = String.Empty;
+        public string CompilerError = string.Empty;
 
-        public bool Pass => ParserPass && CompilerPass;
+        public bool PeVerifyPass = true;
+        public string PeVerifyError = string.Empty;
+
+        public bool Pass => ParserPass && CompilerPass && PeVerifyPass;
 
         public Report(TestCase testCase)
         {
@@ -25,7 +26,9 @@ namespace SLang.NET.Test
                 return "Parser";
             else if (!CompilerPass)
                 return "Compiler";
-            
+            else if (!PeVerifyPass)
+                return "PeVerify";
+
             return "Unknown";
         }
 
@@ -35,6 +38,8 @@ namespace SLang.NET.Test
                 return ParserError;
             else if (!CompilerPass)
                 return CompilerError;
+            else if (!PeVerifyPass)
+                return PeVerifyError;
 
             return "Unknown";
         }

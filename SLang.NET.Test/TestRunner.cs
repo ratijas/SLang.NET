@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace SLang.NET.Test
@@ -8,6 +7,7 @@ namespace SLang.NET.Test
     {
         public List<TestCase> TestCases = new List<TestCase>();
 
+
         public TestRunner(TestsRepository repository)
         {
             TestCases.AddRange(repository.GetTestCases());
@@ -15,13 +15,14 @@ namespace SLang.NET.Test
 
         public ICollection<Report> RunAll()
         {
-            List<Report> reports = new List<Report>(TestCases.Count);
-            
+            var reports = new List<Report>(TestCases.Count);
+
             TestCases.ForEach(t =>
             {
                 try
                 {
-                    reports.Add(t.Run());
+                    var report = t.Run();
+                    reports.Add(report);
                 }
                 catch (NotATestCaseException e)
                 {

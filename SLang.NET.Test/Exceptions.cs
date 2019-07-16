@@ -10,7 +10,7 @@ namespace SLang.NET.Test
     public class NotATestCaseException : Exceptions
     {
         public DirectoryInfo Directory;
-        
+
         public NotATestCaseException(DirectoryInfo directory)
         {
             Directory = directory;

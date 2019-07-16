@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using SLang.IR;
@@ -23,15 +24,21 @@ namespace SLang.NET.Test
         private Meta _meta;
         public Meta Meta => _meta ?? (_meta = Meta.FromFile(MetaJsonInfo));
 
-        private JsonSerializer Serializer = new JsonSerializer();
-        
+        private JsonSerializer _serializer = new JsonSerializer();
+
         public virtual Report Run()
         {
             var report = new Report(this);
             var ast = StageParser(report);
+
             if (report.ParserPass && Meta.Stages.Parser.Pass)
             {
                 StageCompile(report, ast);
+
+                if (report.CompilerPass && Meta.Stages.Compiler.Pass)
+                {
+                    StagePeVerify(report);
+                }
             }
 
             return report;
@@ -67,14 +74,14 @@ namespace SLang.NET.Test
         {
             using (var inputStream = SourceJsonInfo.OpenText())
             {
-                return Serializer.Deserialize<JsonEntity>(new JsonTextReader(inputStream));
+                return _serializer.Deserialize<JsonEntity>(new JsonTextReader(inputStream));
             }
         }
 
         private void StageCompile(Report report, Compilation compilation)
         {
             var meta = Meta.Stages.Compiler;
-            
+
             try
             {
                 var asm = Compiler.CompileToIL(compilation, DllInfo.Name);
@@ -89,6 +96,44 @@ namespace SLang.NET.Test
                 report.CompilerError = e.Message;
                 // TODO: more flexible error matching
                 report.CompilerPass = !meta.Pass && report.CompilerError.Equals(meta.Error);
+            }
+        }
+
+        private void StagePeVerify(Report report)
+        {
+            var meta = Meta.Stages.PeVerify;
+
+            using (var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = Options.Singleton.PeVerify,
+                    ArgumentList = {DllInfo.FullName},
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            })
+            {
+                process.Start();
+                process.WaitForExit();
+
+                var pass = process.ExitCode == 0;
+                var error = process.StandardOutput.ReadToEnd();
+
+                if (pass)
+                {
+                    report.PeVerifyPass = meta.Pass;
+                    if (!meta.Pass)
+                        report.PeVerifyError = "Shouldn't have passed";
+                }
+                else
+                {
+                    report.PeVerifyError = error;
+                    // TODO: more flexible error matching
+                    report.PeVerifyPass = !meta.Pass && report.PeVerifyError.Equals(meta.Error);
+                }
             }
         }
 

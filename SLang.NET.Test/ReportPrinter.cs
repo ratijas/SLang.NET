@@ -50,6 +50,7 @@ namespace SLang.NET.Test
         {
             Out.Write("\t");
         }
+
         private void Hr()
         {
             Out.WriteLine(new string('=', 60));
