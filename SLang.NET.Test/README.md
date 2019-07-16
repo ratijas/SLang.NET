@@ -56,7 +56,8 @@ Default metadata values are:
       "args": [],
       "exit_code": 0,
       "output": "",
-      "error": ""
+      "error": "",
+      "timeout": 10
     }
   }
 }
@@ -83,6 +84,7 @@ Compiler may pass or fail with specific error message.
 #### Run
 
 Run compiled program with given arguments. Exit code, output and error output
-must match.
+must match. If program does not manage to finish with `timeout` seconds, it
+will be killed.
 
 To skip this stage set `run` flag to `false`.

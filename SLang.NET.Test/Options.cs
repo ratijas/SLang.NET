@@ -19,5 +19,12 @@ namespace SLang.NET.Test
             Default = "peverify",
             HelpText = "Path to peverify utility.")]
         public string PeVerify { get; set; }
+        
+        [Option(
+            "runtime",
+            Required = false,
+            Default = "dotnet",
+            HelpText = "Run generated *.dll with given runtime, like dotnet, mono or wine.")]
+        public string Runtime { get; set; }
     }
 }

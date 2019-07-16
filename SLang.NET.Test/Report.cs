@@ -13,7 +13,10 @@ namespace SLang.NET.Test
         public bool PeVerifyPass = true;
         public string PeVerifyError = string.Empty;
 
-        public bool Pass => ParserPass && CompilerPass && PeVerifyPass;
+        public bool RunPass = true;
+        public string RunError = string.Empty;
+
+        public bool Pass => ParserPass && CompilerPass && PeVerifyPass && RunPass;
 
         public Report(TestCase testCase)
         {
@@ -28,6 +31,8 @@ namespace SLang.NET.Test
                 return "Compiler";
             else if (!PeVerifyPass)
                 return "PeVerify";
+            else if (!RunPass)
+                return "Run";
 
             return "Unknown";
         }
@@ -40,6 +45,8 @@ namespace SLang.NET.Test
                 return CompilerError;
             else if (!PeVerifyPass)
                 return PeVerifyError;
+            else if (!RunPass)
+                return RunError;
 
             return "Unknown";
         }

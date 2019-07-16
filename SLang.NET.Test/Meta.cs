@@ -65,6 +65,9 @@ namespace SLang.NET.Test
 
                 [JsonProperty(PropertyName = "error")]
                 public string Error = string.Empty;
+
+                [JsonProperty(PropertyName = "timeout")]
+                public int TimeoutSeconds = 10;
             }
         }
 
