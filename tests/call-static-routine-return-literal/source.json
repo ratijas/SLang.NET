@@ -30,7 +30,7 @@
                   "children":[
                     {
                       "type":"LITERAL",
-                      "value":"4294967297",
+                      "value":"42",
                       "children":[
                         {
                           "type":"UNIT_REF",
