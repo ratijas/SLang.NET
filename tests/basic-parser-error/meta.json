@@ -1,0 +1,8 @@
+{
+  "stages": {
+    "parser": {
+      "pass": false,
+      "error": "type expected to be COMPILATION"
+    }
+  }
+}

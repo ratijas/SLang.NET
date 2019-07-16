@@ -1,0 +1,8 @@
+{
+  "stages": {
+    "compiler": {
+      "pass": false,
+      "error": "Return type mismatch. Expected: System.String, actual: System.Int64"
+    }
+  }
+}
