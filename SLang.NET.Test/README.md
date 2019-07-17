@@ -38,6 +38,7 @@ Default metadata values are:
 
 ```json
 {
+  "skip": false,
   "stages": {
     "parser": {
       "pass": true,
@@ -63,6 +64,7 @@ Default metadata values are:
 }
 ```
 
+Tests marked with `"skip": true` won't be run at all.
 
 `error` and `output` values are special string matching objects.
 

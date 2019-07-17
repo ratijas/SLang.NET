@@ -5,6 +5,9 @@ namespace SLang.NET.Test
 {
     public class Meta
     {
+        [JsonProperty(PropertyName = "skip")]
+        public bool Skip = false;
+
         [JsonProperty(PropertyName = "stages")]
         public _Stages Stages = new _Stages();
 

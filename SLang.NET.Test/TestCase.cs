@@ -43,28 +43,34 @@ namespace SLang.NET.Test
         {
             var report = new Report(this);
 
-            // TODO: check if skipped
-
-            report.Status = Status.Running;
-
-            var ast = StageParser(report);
-
-            if (report.ParserPass && Meta.Stages.Parser.Pass)
+            if (Meta.Skip)
             {
-                StageCompile(report, ast);
+                report.Status = Status.Skipped;
+            }
+            else
+            {
+                report.Status = Status.Running;
 
-                if (report.CompilerPass && Meta.Stages.Compiler.Pass)
+                var ast = StageParser(report);
+
+                if (report.ParserPass && Meta.Stages.Parser.Pass)
                 {
-                    StagePeVerify(report);
+                    StageCompile(report, ast);
 
-                    if (report.PeVerifyPass && Meta.Stages.PeVerify.Pass)
+                    if (report.CompilerPass && Meta.Stages.Compiler.Pass)
                     {
-                        StageRun(report);
+                        StagePeVerify(report);
+
+                        if (report.PeVerifyPass && Meta.Stages.PeVerify.Pass)
+                        {
+                            StageRun(report);
+                        }
                     }
                 }
+
+                report.ResolveStatus();
             }
 
-            report.ResolveStatus();
             return report;
         }
 
