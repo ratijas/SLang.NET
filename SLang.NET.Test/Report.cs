@@ -13,6 +13,7 @@ namespace SLang.NET.Test
         //  error does NOT match |          Error mismatch
 
         public TestCase TestCase;
+        public Status Status = Status.Invalid;
 
         public bool ParserPass = true;
         public string ParserError = string.Empty;
@@ -25,8 +26,6 @@ namespace SLang.NET.Test
 
         public bool RunPass = true;
         public string RunError = string.Empty;
-
-        public bool Pass => ParserPass && CompilerPass && PeVerifyPass && RunPass;
 
         public Report(TestCase testCase)
         {
@@ -59,6 +58,17 @@ namespace SLang.NET.Test
                 return RunError;
 
             return "Unknown";
+        }
+
+        /// <summary>
+        /// Indicate that report is finished and status shall be set to either 'passed' or 'failed'.
+        /// </summary>
+        public void ResolveStatus()
+        {
+            if (ParserPass && CompilerPass && PeVerifyPass && RunPass)
+                Status = Status.Passed;
+            else
+                Status = Status.Failed;
         }
     }
 }

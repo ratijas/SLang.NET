@@ -30,11 +30,11 @@ namespace SLang.NET.Test
 
         public void Print(Report report)
         {
-            var status = report.Pass ? "Passed" : "Failed";
-            var separator = new string('-', 52 - report.TestCase.Name.Length);
+            var status = report.Status.ToString();
+            var separator = new string('-', 58 - report.TestCase.Name.Length - status.Length);
             string template = $"{report.TestCase.Name} {separator} {status}";
             Out.WriteLine(template);
-            if (!report.Pass)
+            if (report.Status == Status.Failed)
                 PrintDetails(report);
         }
 

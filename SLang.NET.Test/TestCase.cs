@@ -42,6 +42,11 @@ namespace SLang.NET.Test
         public Report Run()
         {
             var report = new Report(this);
+
+            // TODO: check if skipped
+
+            report.Status = Status.Running;
+
             var ast = StageParser(report);
 
             if (report.ParserPass && Meta.Stages.Parser.Pass)
@@ -59,6 +64,7 @@ namespace SLang.NET.Test
                 }
             }
 
+            report.ResolveStatus();
             return report;
         }
 
