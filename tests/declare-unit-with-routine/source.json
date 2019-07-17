@@ -35,7 +35,7 @@
                     },
                     null,
                     {
-                      "type": "ENTITY_LIST"
+                      "type": "PARAMETER_LIST"
                     },
                     null,
                     null,
@@ -71,7 +71,7 @@
         },
         null,
         {
-          "type": "ENTITY_LIST"
+          "type": "PARAMETER_LIST"
         },
         null,
         null,
