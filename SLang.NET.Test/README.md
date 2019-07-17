@@ -17,9 +17,17 @@ For example:
 
 `$ SLang.NET.Test declare-unit call-static-routine-return-integer`
 
+For more information try this:
+
+`$ SLang.NET.Test --help`
+
 Report will be generated and printed on standard output in plain text format.
 
-TODO: output in JSON format.
+### Exit Code
+
+ * 0: OK
+ * 1: One or more tests have failed
+ * 2: Command line arguments error
 
 ## Structure
 
@@ -38,6 +46,7 @@ Default metadata values are:
 
 ```json
 {
+  "skip": false,
   "stages": {
     "parser": {
       "pass": true,
@@ -62,6 +71,33 @@ Default metadata values are:
   }
 }
 ```
+
+Tests marked with `"skip": true` won't be run at all.
+
+`error` and `output` values are special string matching objects.
+
+String matching object formats:
+
+ 1. Literal AS IS
+    ```json
+    { "error": "TypeMismatch" }
+    ```
+ 2. Regular expression
+    ```json
+    {
+      "error": {
+        "regex": "actual type is Int(32|64)"
+      }
+    }
+    ```
+ 3. Ignore (always matches)
+    ```json
+    {
+      "error": {
+        "ignore": true
+      }
+    }
+    ```
 
 ### Stages
 
