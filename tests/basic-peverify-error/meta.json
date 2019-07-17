@@ -3,7 +3,7 @@
     "peverify": {
       "pass": false,
       "error": {
-        "regex": "In method: SLang\\.\\$GlobalUnit::\\$anonymous\\(\\)\nError: Run ahead of method code at 0x\\d+\nError count: 1\n"
+        "regex": "In method: SLang\\.\\$GlobalUnit::\\$anonymous\\(\\)\nError: Run ahead of method code at 0x\\d+\nError count: 1"
       }
     }
   }
