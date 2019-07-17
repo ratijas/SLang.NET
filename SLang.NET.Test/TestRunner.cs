@@ -29,11 +29,11 @@ namespace SLang.NET.Test
                 (lhs, rhs) => string.Compare(lhs.Name, rhs.Name, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public IEnumerable<Task<Report>> RunAll()
+        public IEnumerable<Report> RunAll()
         {
             foreach (var t in TestCases)
             {
-                Task<Report> report;
+                Report report;
                 try
                 {
                     report = t.Run();

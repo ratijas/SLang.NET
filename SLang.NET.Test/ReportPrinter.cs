@@ -21,17 +21,18 @@ namespace SLang.NET.Test
             Out = Console.Out;
         }
 
-        public void Print(IEnumerable<Task<Report>> reports)
+        public void Print(IEnumerable<Report> reports)
         {
             Out.WriteLine("Running test cases");
             Hr();
-            foreach (var task in reports)
+            foreach (var report in reports)
             {
-                var report = task.Result;
+                Print(report);
+                report.Complete.GetAwaiter().GetResult();
+                Rewrite();
                 Print(report);
                 Summary.Add(report);
             }
-
             Hr();
             PrintSummary();
             Out.WriteLine("End of report");
@@ -51,25 +52,23 @@ namespace SLang.NET.Test
         {
             var stage = report.GetStage();
             var error = report.GetError();
-            Tab();
-            Out.WriteLine($"Stage: {stage}");
-            Tab();
-            Out.WriteLine($"Error: {error}");
+            Tab(); Out.WriteLine($"Stage: {stage}");
+            Tab(); Out.WriteLine($"Error: {error}");
         }
 
         private void PrintSummary()
         {
             Out.WriteLine("Summary");
-            Tab();
-            Out.WriteLine($"Passed:     {Summary.Passed}");
-            Tab();
-            Out.WriteLine($"Failed:     {Summary.Failed}");
-            Tab();
-            Out.WriteLine($"Skipped:    {Summary.Skipped}");
-            Tab();
-            Out.WriteLine($"===============");
-            Tab();
-            Out.WriteLine($"Total:      {Summary.Total}");
+            Tab(); Out.WriteLine($"Passed:     {Summary.Passed}");
+            Tab(); Out.WriteLine($"Failed:     {Summary.Failed}");
+            Tab(); Out.WriteLine($"Skipped:    {Summary.Skipped}");
+            Tab(); Out.WriteLine($"===============");
+            Tab(); Out.WriteLine($"Total:      {Summary.Total}");
+        }
+
+        private void Rewrite()
+        {
+            Console.CursorTop -= 1;
         }
 
         private void Tab()

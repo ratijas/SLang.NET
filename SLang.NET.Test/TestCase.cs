@@ -42,7 +42,7 @@ namespace SLang.NET.Test
 
         private JsonSerializer _serializer = new JsonSerializer();
 
-        public async Task<Report> Run()
+        public Report Run()
         {
             var report = new Report(this);
 
@@ -53,29 +53,33 @@ namespace SLang.NET.Test
             else
             {
                 report.Status = Status.Running;
-
-                var ast = await StageParser(report);
-
-                if (report.ParserPass && Meta.Stages.Parser.Pass)
-                {
-                    StageCompile(report, ast);
-
-                    if (report.CompilerPass && Meta.Stages.Compiler.Pass)
-                    {
-                        StagePeVerify(report);
-                        StageIldasm();
-
-                        if (report.PeVerifyPass && Meta.Stages.PeVerify.Pass)
-                        {
-                            StageRun(report);
-                        }
-                    }
-                }
-
-                report.ResolveStatus();
+                report.Complete = Complete(report);
             }
 
             return report;
+        }
+
+        private async Task Complete(Report report)
+        {
+            var ast = await StageParser(report);
+
+            if (report.ParserPass && Meta.Stages.Parser.Pass)
+            {
+                StageCompile(report, ast);
+
+                if (report.CompilerPass && Meta.Stages.Compiler.Pass)
+                {
+                    StagePeVerify(report);
+                    StageIldasm();
+
+                    if (report.PeVerifyPass && Meta.Stages.PeVerify.Pass)
+                    {
+                        StageRun(report);
+                    }
+                }
+            }
+
+            report.ResolveStatus();
         }
 
         private async Task<Compilation> StageParser(Report report)
