@@ -21,6 +21,8 @@ namespace SLang.IR
     public sealed class Identifier : Entity
     {
         public string Value { get; }
+        
+        public static Identifier Empty = new Identifier(string.Empty);
 
         public Identifier(string value)
         {
@@ -78,7 +80,7 @@ namespace SLang.IR
     public class RoutineDeclaration : Declaration
     {
         public bool IsForeign { get; set; }
-        public List<Argument> Arguments { get; } = new List<Argument>();
+        public List<Parameter> Parameters { get; } = new List<Parameter>();
         public UnitRef ReturnType { get; set; }
         public PreCondition PreCondition { get; set; }
         public List<Entity> Body { get; } = new List<Entity>();
@@ -87,7 +89,7 @@ namespace SLang.IR
         public RoutineDeclaration(
             Identifier name,
             bool isForeign,
-            IEnumerable<Argument> arguments,
+            IEnumerable<Parameter> parameters,
             UnitRef returnType,
             PreCondition preCondition,
             IEnumerable<Entity> body,
@@ -96,28 +98,33 @@ namespace SLang.IR
             : base(name)
         {
             IsForeign = isForeign;
-            Arguments.AddRange(arguments);
+            Parameters.AddRange(parameters);
             ReturnType = returnType;
             PreCondition = preCondition;
             Body.AddRange(body);
             PostCondition = postCondition;
         }
 
-        public class Argument
+        internal class ParameterList : Entity
         {
+            public List<Parameter> Parameters { get; } = new List<Parameter>();
+
+            public ParameterList(IEnumerable<Parameter> parameters)
+            {
+                Parameters.AddRange(parameters);
+            }
+        }
+
+        public class Parameter : Entity
+        {
+            // TODO: replace with more general TYPE (when it will be specified and implemented)
             public UnitRef Type { get; set; }
             public Identifier Name { get; set; }
 
-            public Argument(UnitRef type, Identifier name)
+            public Parameter(UnitRef type, Identifier name)
             {
                 Type = type;
                 Name = name;
-            }
-
-            internal Argument(Entity fromEntity)
-            {
-                // TODO: refine specification
-                throw new NotImplementedException("TODO: refine specification");
             }
         }
     }

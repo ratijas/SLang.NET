@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -78,6 +80,7 @@ namespace SLang.NET.Gen
     {
         public abstract bool IsNative { get; }
         public ISignature<UnitReference> SignatureReference { get; protected set; }
+        public ISignature<UnitDefinition> SignatureDefinition { get; protected set; }
         public new UnitDefinition Unit { get; protected set; }
 
         /// <summary>
@@ -97,8 +100,8 @@ namespace SLang.NET.Gen
             return this;
         }
 
-        public abstract void Stage1CompileStubs();
-        public abstract void Stage2CompileBody();
+        public abstract void Stage1RoutineStubs();
+        public abstract void Stage2RoutineBody();
     }
 
     public class NativeRoutineDefinition : RoutineDefinition
@@ -118,12 +121,12 @@ namespace SLang.NET.Gen
             methodReference = nativeMethod;
         }
 
-        public override void Stage1CompileStubs()
+        public override void Stage1RoutineStubs()
         {
             NativeMethod = methodReference.Resolve();
         }
 
-        public override void Stage2CompileBody()
+        public override void Stage2RoutineBody()
         {
             // do nothing
         }
@@ -148,12 +151,27 @@ namespace SLang.NET.Gen
         // some globals to share between code generation functionality
         private ILProcessor ip;
 
-        public override void Stage1CompileStubs()
+        public override void Stage1RoutineStubs()
         {
-            MakeMethodWithSignature();
+            SignatureDefinition = SignatureReference.Resolve();
+
+            // name, attributes & return type
+            MethodAttributes attributes = MethodAttributes.Public | MethodAttributes.Static;
+            NativeMethod =
+                new MethodDefinition(
+                    Name.Value,
+                    attributes,
+                    SignatureDefinition.ReturnType.NativeType);
+
+            // parameters types
+            foreach (var param in SignatureDefinition.Parameters)
+            {
+                var nativeParam = new ParameterDefinition(param.Type.NativeType) {Name = param.Name.Value};
+                NativeMethod.Parameters.Add(nativeParam);
+            }
         }
 
-        public override void Stage2CompileBody()
+        public override void Stage2RoutineBody()
         {
             if (NativeMethod == null)
                 throw new CompilationStageException(Context, this, 2);
@@ -164,6 +182,9 @@ namespace SLang.NET.Gen
             {
                 switch (entity)
                 {
+                    case Call c:
+                        GenerateStandaloneCall(c);
+                        break;
                     // TODO: replace with some polymorphism
                     case Return r:
                         GenerateReturn(r);
@@ -175,49 +196,26 @@ namespace SLang.NET.Gen
             ip = null;
         }
 
-        private void MakeMethodWithSignature()
-        {
-            var signature = SignatureReference.Resolve();
-
-            // name, attributes & return type
-            MethodAttributes attributes = MethodAttributes.Public | MethodAttributes.Static;
-            NativeMethod =
-                new MethodDefinition(
-                    Name.Value,
-                    attributes,
-                    signature.ReturnType.NativeType);
-
-            // parameters types
-            foreach (var (name, unit) in signature.Parameters)
-            {
-                var param = new ParameterDefinition(unit.NativeType) {Name = name.Value};
-                NativeMethod.Parameters.Add(param);
-            }
-        }
-
         private void GenerateReturn(Return r)
         {
-            if (r.OptionalValue != null)
+            var expr = r?.OptionalValue;
+            var exprVar = GenerateExpression(expr);
+            var exprVarType = exprVar?.VariableType ?? Context.TypeSystem.Void.NativeType;
+            
+            if (!SignatureDefinition.ReturnType.NativeType.FullName.Equals(exprVarType.FullName))
+                throw new TypeMismatchException(SignatureReference.ReturnType, exprVarType);
+
+            if (SignatureDefinition.ReturnType.Equals(Context.TypeSystem.Void))
             {
-                var returnExpr = r.OptionalValue;
-                var returnVar = GenerateExpression(returnExpr);
+                // void method returning with void routine.  do nothing.
+            }
+            else
+            {
+                Debug.Assert(exprVar != null);
+                Debug.Assert(!exprVarType.FullName.Equals(Context.TypeSystem.Void.NativeType.FullName));
 
-                var exprTypeName = returnVar.VariableType.FullName;
-                var methodTypeName = NativeMethod.ReturnType.FullName;
-
-                if (!methodTypeName.Equals(exprTypeName))
-                    throw new Exception($"Return type mismatch. Expected: {NativeMethod.ReturnType.FullName}, " +
-                                        $"actual: {returnVar.VariableType.FullName}");
-
-                else if (!methodTypeName.Equals(Context.TypeSystem.Void.NativeType.FullName))
-                {
-                    ip.Body.Variables.Add(returnVar);
-                    ip.Emit(OpCodes.Ldloc, returnVar);
-                }
-                else
-                {
-                    // void method returning with void routine.  do nothing.
-                }
+                ip.Body.Variables.Add(exprVar);
+                ip.Emit(OpCodes.Ldloc, exprVar);
             }
 
             ip.Emit(OpCodes.Ret);
@@ -230,28 +228,18 @@ namespace SLang.NET.Gen
         /// <returns>Index </returns>
         private VariableDefinition GenerateExpression(Expression expression)
         {
-            VariableDefinition result;
             switch (expression)
             {
+                case null:
+                    return null;
                 case Literal literal:
                     var unit = Context.ResolveBuiltIn(new UnitReference(Context, literal.Type));
-                    result = new VariableDefinition(unit.NativeType);
+                    var result = new VariableDefinition(unit.NativeType);
                     unit.LoadFromLiteral(literal.Value, ip);
                     ip.Emit(OpCodes.Stloc, result);
                     return result;
                 case Call call:
-                    var routine = GenerateCall(call);
-                    if (routine.SignatureReference.ReturnType.Resolve().Equals(Context.TypeSystem.Void))
-                    {
-                        ip.Emit(OpCodes.Nop);
-                        return new VariableDefinition(Context.TypeSystem.Void.NativeType);
-                    }
-                    else
-                    {
-                        result = new VariableDefinition(routine.NativeMethod.ReturnType);
-                        ip.Emit(OpCodes.Stloc, result);
-                        return result;
-                    }
+                    return GenerateVariableFromCall(call);
 
                 // TODO: more expression classes
                 default:
@@ -272,11 +260,74 @@ namespace SLang.NET.Gen
 
             var routine = new RoutineReference(Context, call.Callee).Resolve();
 
-            if (call.Arguments.Any())
-                throw new NotImplementedException("Passing arguments to routines is not implemented yet.");
+            // arguments:
+            {
+                // compile
+                var args = new List<VariableDefinition>(call.Arguments.Count);
+                foreach (var expression in call.Arguments)
+                {
+                    args.Add(GenerateExpression(expression));
+                }
+
+                // verify
+                VerifyCallArguments(routine, args);
+
+                // add & load
+                foreach (var arg in args)
+                {
+                    ip.Body.Variables.Add(arg);
+                    ip.Emit(OpCodes.Ldloc, arg);
+                }
+            }
 
             ip.Emit(OpCodes.Call, routine.NativeMethod);
+
             return routine;
+        }
+
+        private VariableDefinition GenerateVariableFromCall(Call call)
+        {
+            var routine = GenerateCall(call);
+            if (!routine.SignatureReference.ReturnType.Equals(Context.TypeSystem.Void))
+            {
+                var variable = new VariableDefinition(routine.SignatureDefinition.ReturnType.NativeType);
+                ip.Emit(OpCodes.Stloc, variable);
+                return variable;
+            }
+
+            return null;
+        }
+
+        private void GenerateStandaloneCall(Call call)
+        {
+            var routine = GenerateCall(call);
+            if (!routine.SignatureReference.ReturnType.Equals(Context.TypeSystem.Void))
+            {
+                // drop result
+                // TODO: destructors?
+                ip.Emit(OpCodes.Pop);
+            }
+        }
+
+        private static void VerifyCallArguments(RoutineDefinition routine,
+            List<VariableDefinition> arguments)
+        {
+            var signature = routine.SignatureDefinition;
+            var parameters = signature.Parameters;
+
+            // arity
+            if (parameters.Count != arguments.Count)
+                throw new ArityMismatchException(routine, arguments.Count);
+
+            // types
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                var param = parameters[i];
+                var arg = arguments[i];
+                // TODO: types equality / IsAssignableFrom
+                if (!param.Type.NativeType.FullName.Equals(arg.VariableType.Resolve().FullName))
+                    throw new TypeMismatchException(param.Type, arg.VariableType);
+            }
         }
 
         private void FixInitLocals()

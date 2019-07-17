@@ -1,7 +1,9 @@
 using System;
+using Mono.Cecil;
 
 namespace SLang.NET.Gen
 {
+    // TODO: improve diagnostics, including call site information and unified type system.
     public class CompilerException : Exception
     {
     }
@@ -42,5 +44,39 @@ namespace SLang.NET.Gen
             Routine = routine;
             Stage = stage;
         }
+    }
+
+    public class ArityMismatchException : CompilerException
+    {
+
+        public RoutineDefinition Routine;
+        public int Expected => Routine.SignatureReference.Parameters.Count;
+        public int Actual { get; }
+
+        public ArityMismatchException(RoutineDefinition routine, int actual)
+        {
+            Routine = routine;
+            Actual = actual;
+        }
+
+        public override string Message =>
+            $"{nameof(ArityMismatchException)} at {Routine} (expected: {Expected}, actual: {Actual})";
+    }
+
+    public class TypeMismatchException : CompilerException
+    {
+        public UnitReference Expected { get; }
+
+        // TODO: change to UnitReference, once SLang-specific VariableDeclaration is implemented
+        public TypeReference Actual { get; }
+
+        public TypeMismatchException(UnitReference expected, TypeReference actual)
+        {
+            Expected = expected;
+            Actual = actual;
+        }
+
+        public override string Message =>
+            $"{nameof(TypeMismatchException)} (expected: {Expected}, actual: {Actual.FullName})";
     }
 }

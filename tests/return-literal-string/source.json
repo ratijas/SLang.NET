@@ -2,40 +2,37 @@
   "type": "COMPILATION",
   "children": [
     {
-      "type": "DECLARATION_LIST",
-      "children": []
+      "type": "DECLARATION_LIST"
     },
     {
       "type": "ROUTINE",
       "children": [
         {
           "type": "IDENTIFIER",
-          "value": "$anonymous",
-          "children": []
+          "value": "$anonymous"
         },
         null,
         {
-          "type": "ENTITY_LIST"
+          "type": "PARAMETER_LIST"
         },
         {
-          "type":"UNIT_REF",
-          "value":"String"
+          "type": "UNIT_REF",
+          "value": "String"
         },
         null,
         {
-          "type":"ENTITY_LIST",
-          "value":null,
-          "children":[
+          "type": "ENTITY_LIST",
+          "children": [
             {
-              "type":"RETURN",
-              "children":[
+              "type": "RETURN",
+              "children": [
                 {
-                  "type":"LITERAL",
-                  "value":"Hello, world!",
-                  "children":[
+                  "type": "LITERAL",
+                  "value": "Hello, world!",
+                  "children": [
                     {
-                      "type":"UNIT_REF",
-                      "value":"String"
+                      "type": "UNIT_REF",
+                      "value": "String"
                     }
                   ]
                 }

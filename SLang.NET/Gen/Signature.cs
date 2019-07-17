@@ -11,17 +11,33 @@ namespace SLang.NET.Gen
         /// <summary>
         /// Parameters may have name, or it can be an empty string.
         /// </summary>
-        List<(Identifier Name, T Type)> Parameters { get; }
+        List<Parameter<T>> Parameters { get; }
 
         ISignature<UnitDefinition> Resolve();
+    }
+
+    public struct Parameter<T>
+    {
+        public Identifier Name;
+        public T Type;
+
+        public Parameter(Identifier name, T type)
+        {
+            Name = name;
+            Type = type;
+        }
+
+        public Parameter(T type) : this(Identifier.Empty, type)
+        {
+        }
     }
 
     public class SignatureReference : ISignature<UnitReference>
     {
         public UnitReference ReturnType { get; set; }
 
-        public List<(Identifier Name, UnitReference Type)> Parameters { get; } =
-            new List<(Identifier Name, UnitReference Type)>();
+        public List<Parameter<UnitReference>> Parameters { get; } =
+            new List<Parameter<UnitReference>>();
 
         public SignatureReference(Context ctx) : this(ctx.TypeSystem.Void)
         {
@@ -35,12 +51,12 @@ namespace SLang.NET.Gen
         public SignatureReference(UnitReference returnType, IEnumerable<UnitReference> parameters)
         {
             ReturnType = returnType;
-            Parameters.AddRange(parameters.Select(p => (new Identifier(string.Empty), p)));
+            Parameters.AddRange(parameters.Select(p => new Parameter<UnitReference>(p)));
         }
 
         public SignatureReference(
             UnitReference returnType,
-            IEnumerable<(Identifier Name, UnitReference Type)> parameters
+            IEnumerable<Parameter<UnitReference>> parameters
         )
         {
             ReturnType = returnType;
@@ -50,16 +66,15 @@ namespace SLang.NET.Gen
         public SignatureReference(Context ctx, RoutineDeclaration routine)
         {
             ReturnType = new UnitReference(ctx, routine.ReturnType);
-            Parameters.AddRange(routine.Arguments.Select(argument =>
-                (argument.Name, new UnitReference(ctx, argument.Type))));
+            Parameters.AddRange(routine.Parameters.Select(param =>
+                new Parameter<UnitReference>(param.Name, new UnitReference(ctx, param.Type))));
         }
 
         public ISignature<UnitDefinition> Resolve()
         {
-            var sig = new SignatureDefinition(
+            return new SignatureDefinition(
                 ReturnType.Resolve(),
-                Parameters.Select(argument => (argument.Name, argument.Type.Resolve())));
-            return sig;
+                Parameters.Select(param => new Parameter<UnitDefinition>(param.Name, param.Type.Resolve())));
         }
     }
 
@@ -67,8 +82,8 @@ namespace SLang.NET.Gen
     {
         public UnitDefinition ReturnType { get; set; }
 
-        public List<(Identifier Name, UnitDefinition Type)> Parameters { get; }
-            = new List<(Identifier Name, UnitDefinition Type)>();
+        public List<Parameter<UnitDefinition>> Parameters { get; }
+            = new List<Parameter<UnitDefinition>>();
 
         public SignatureDefinition(Context ctx) : this(ctx.TypeSystem.Void)
         {
@@ -81,11 +96,11 @@ namespace SLang.NET.Gen
 
         public SignatureDefinition(
             UnitDefinition returnType,
-            IEnumerable<(Identifier Name, UnitDefinition Type)> arguments
+            IEnumerable<Parameter<UnitDefinition>> parameters
         )
             : this(returnType)
         {
-            Parameters.AddRange(arguments);
+            Parameters.AddRange(parameters);
         }
 
         public ISignature<UnitDefinition> Resolve()

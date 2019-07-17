@@ -1,0 +1,128 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": [
+        {
+          "type": "ROUTINE",
+          "children": [
+            {
+              "type": "IDENTIFIER",
+              "value": "routine_takes_parameters"
+            },
+            null,
+            {
+              "type": "PARAMETER_LIST",
+              "children": [
+                {
+                  "type": "PARAMETER",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "Integer"
+                    },
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "x"
+                    }
+                  ]
+                },
+                {
+                  "type": "PARAMETER",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "String"
+                    },
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "abc"
+                    }
+                  ]
+                }
+              ]
+            },
+            null,
+            null,
+            {
+              "type": "ENTITY_LIST",
+              "children": [
+                {
+                  "type": "RETURN"
+                }
+              ]
+            },
+            null
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous",
+          "children": []
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST"
+        },
+        null,
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "CALL",
+              "children": [
+                {
+                  "type": "CALLEE",
+                  "children": [
+                    null,
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "routine_takes_parameters"
+                    }
+                  ]
+                },
+                {
+                  "type": "EXPRESSION_LIST",
+                  "value": null,
+                  "children": [
+                    {
+                      "type": "LITERAL",
+                      "value": "42",
+                      "children": [
+                        {
+                          "type": "UNIT_REF",
+                          "value": "Integer"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "LITERAL",
+                      "value": "3.14",
+                      "children": [
+                        {
+                          "type": "UNIT_REF",
+                          "value": "Real"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "RETURN"
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}

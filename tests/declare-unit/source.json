@@ -5,31 +5,27 @@
       "type": "DECLARATION_LIST",
       "children": [
         {
-          "type":"UNIT",
-          "children":[
+          "type": "UNIT",
+          "children": [
             {
-              "type":"IDENTIFIER",
-              "value":"MyCoolUnit"
+              "type": "IDENTIFIER",
+              "value": "MyCoolUnit"
             },
             {
-              "type":"REF_VAL_SPEC",
+              "type": "REF_VAL_SPEC",
               "value": "ref"
             },
             {
-              "type":"CONCURRENT_SPEC",
-              "value": null
+              "type": "CONCURRENT_SPEC"
             },
             {
-              "type":"FOREIGN_SPEC",
-              "value": null
+              "type": "FOREIGN_SPEC"
             },
             {
-              "type":"DECLARATION_LIST",
-              "children":[]
+              "type": "DECLARATION_LIST"
             },
             {
-              "type":"EXPRESSION_LIST",
-              "children":[]
+              "type": "EXPRESSION_LIST"
             }
           ]
         }
@@ -40,22 +36,19 @@
       "children": [
         {
           "type": "IDENTIFIER",
-          "value": "$anonymous",
-          "children": []
+          "value": "$anonymous"
         },
         null,
         {
-          "type": "ENTITY_LIST"
+          "type": "PARAMETER_LIST"
         },
         null,
         null,
         {
-          "type":"ENTITY_LIST",
-          "value":null,
-          "children":[
+          "type": "ENTITY_LIST",
+          "children": [
             {
-              "type":"RETURN",
-              "children":[]
+              "type": "RETURN"
             }
           ]
         },

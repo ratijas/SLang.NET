@@ -100,8 +100,8 @@ namespace SLang.NET.Gen
 
         public void Compile()
         {
-            Units.ForEach(unit => unit.Stage1CompileStubs());
-            Units.ForEach(unit => unit.Stage2CompileBody());
+            Units.ForEach(unit => unit.Stage1RoutineStubs());
+            Units.ForEach(unit => unit.Stage2RoutineBody());
         }
     }
 
