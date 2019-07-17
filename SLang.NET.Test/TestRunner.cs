@@ -11,6 +11,8 @@ namespace SLang.NET.Test
         public TestRunner(TestsRepository repository)
         {
             TestCases.AddRange(repository.GetTestCases());
+            TestCases.Sort(
+                (lhs, rhs) => string.Compare(lhs.Name, rhs.Name, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public ICollection<Report> RunAll()
