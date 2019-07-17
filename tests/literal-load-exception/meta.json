@@ -1,0 +1,8 @@
+{
+  "stages": {
+    "compiler": {
+      "pass": false,
+      "error": "Unable to parse \"Integer\" literal \"abc\""
+    }
+  }
+}
