@@ -8,7 +8,7 @@ namespace SLang.NET.Test
     public class ReportPrinter
     {
         public TextWriter Out;
-        private Summary summary = new Summary();
+        public Summary Summary = new Summary();
 
         public ReportPrinter(TextWriter writer)
         {
@@ -20,12 +20,16 @@ namespace SLang.NET.Test
             Out = Console.Out;
         }
 
-        public void Print(ICollection<Report> reports)
+        public void Print(IEnumerable<Report> reports)
         {
-            Out.WriteLine($"Running {reports.Count} test cases");
+            Out.WriteLine($"Running test cases");
             Hr();
-            reports.ForEach(Print);
-            reports.ForEach(summary.Add);
+            foreach (var report in reports)
+            {
+                Print(report);
+                Summary.Add(report);
+            }
+
             Hr();
             PrintSummary();
             Out.WriteLine("End of report");
@@ -45,18 +49,25 @@ namespace SLang.NET.Test
         {
             var stage = report.GetStage();
             var error = report.GetError();
-            Tab(); Out.WriteLine($"Stage: {stage}");
-            Tab(); Out.WriteLine($"Error: {error}");
+            Tab();
+            Out.WriteLine($"Stage: {stage}");
+            Tab();
+            Out.WriteLine($"Error: {error}");
         }
 
         private void PrintSummary()
         {
             Out.WriteLine("Summary");
-            Tab(); Out.WriteLine($"Passed:     {summary.Passed}");
-            Tab(); Out.WriteLine($"Failed:     {summary.Failed}");
-            Tab(); Out.WriteLine($"Skipped:    {summary.Skipped}");
-            Tab(); Out.WriteLine($"===============");
-            Tab(); Out.WriteLine($"Total:      {summary.Total}");
+            Tab();
+            Out.WriteLine($"Passed:     {Summary.Passed}");
+            Tab();
+            Out.WriteLine($"Failed:     {Summary.Failed}");
+            Tab();
+            Out.WriteLine($"Skipped:    {Summary.Skipped}");
+            Tab();
+            Out.WriteLine($"===============");
+            Tab();
+            Out.WriteLine($"Total:      {Summary.Total}");
         }
 
         private void Tab()
@@ -68,29 +79,29 @@ namespace SLang.NET.Test
         {
             Out.WriteLine(new string('=', 60));
         }
+    }
 
-        private class Summary
+    public class Summary
+    {
+        public int Passed;
+        public int Failed;
+        public int Skipped;
+        public int Total;
+
+        public void Add(Report report)
         {
-            public int Passed;
-            public int Failed;
-            public int Skipped;
-            public int Total;
-
-            public void Add(Report report)
+            Total += 1;
+            switch (report.Status)
             {
-                Total += 1;
-                switch (report.Status)
-                {
-                    case Status.Passed:
-                        Passed += 1;
-                        break;
-                    case Status.Failed:
-                        Failed += 1;
-                        break;
-                    case Status.Skipped:
-                        Skipped += 1;
-                        break;
-                }
+                case Status.Passed:
+                    Passed += 1;
+                    break;
+                case Status.Failed:
+                    Failed += 1;
+                    break;
+                case Status.Skipped:
+                    Skipped += 1;
+                    break;
             }
         }
     }

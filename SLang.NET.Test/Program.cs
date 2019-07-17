@@ -27,7 +27,7 @@ namespace SLang.NET.Test
             var printer = new ReportPrinter();
             printer.Print(reports);
 
-            var exit_code = reports.Any(r => r.Status == Status.Failed) ? 1 : 0;
+            var exit_code = printer.Summary.Failed > 0 ? 1 : 0;
             return exit_code;
         }
     }

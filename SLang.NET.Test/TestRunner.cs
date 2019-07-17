@@ -28,24 +28,23 @@ namespace SLang.NET.Test
                 (lhs, rhs) => string.Compare(lhs.Name, rhs.Name, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public ICollection<Report> RunAll()
+        public IEnumerable<Report> RunAll()
         {
-            var reports = new List<Report>(TestCases.Count);
-
-            TestCases.ForEach(t =>
+            foreach (var t in TestCases)
             {
+                Report report;
                 try
                 {
-                    var report = t.Run();
-                    reports.Add(report);
+                    report = t.Run();
                 }
                 catch (NotATestCaseException e)
                 {
                     Console.WriteLine(e);
+                    continue;
                 }
-            });
 
-            return reports;
+                yield return report;
+            }
         }
     }
 }
