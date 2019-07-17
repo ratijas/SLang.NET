@@ -84,8 +84,8 @@ namespace SLang.NET.Gen
             Routines.Add(routine);
         }
 
-        public abstract void Stage1CompileStubs();
-        public abstract void Stage2CompileBody();
+        public abstract void Stage1RoutineStubs();
+        public abstract void Stage2RoutineBody();
     }
 
     public abstract class BuiltInUnitDefinition : UnitDefinition
@@ -101,11 +101,11 @@ namespace SLang.NET.Gen
         public abstract void LoadFromLiteral(string literal, ILProcessor ip);
 
 
-        public override void Stage1CompileStubs()
+        public override void Stage1RoutineStubs()
         {
         }
 
-        public override void Stage2CompileBody()
+        public override void Stage2RoutineBody()
         {
         }
     }
@@ -147,20 +147,20 @@ namespace SLang.NET.Gen
             }
         }
 
-        public override void Stage1CompileStubs()
+        public override void Stage1RoutineStubs()
         {
             foreach (var routine in Routines)
             {
-                routine.Stage1CompileStubs();
+                routine.Stage1RoutineStubs();
                 NativeTypeDefinition.Methods.Add(routine.NativeMethod);
             }
         }
 
-        public override void Stage2CompileBody()
+        public override void Stage2RoutineBody()
         {
             foreach (var routine in Routines)
             {
-                routine.Stage2CompileBody();
+                routine.Stage2RoutineBody();
             }
         }
     }

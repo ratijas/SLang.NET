@@ -98,8 +98,8 @@ namespace SLang.NET.Gen
             return this;
         }
 
-        public abstract void Stage1CompileStubs();
-        public abstract void Stage2CompileBody();
+        public abstract void Stage1RoutineStubs();
+        public abstract void Stage2RoutineBody();
     }
 
     public class NativeRoutineDefinition : RoutineDefinition
@@ -119,12 +119,12 @@ namespace SLang.NET.Gen
             methodReference = nativeMethod;
         }
 
-        public override void Stage1CompileStubs()
+        public override void Stage1RoutineStubs()
         {
             NativeMethod = methodReference.Resolve();
         }
 
-        public override void Stage2CompileBody()
+        public override void Stage2RoutineBody()
         {
             // do nothing
         }
@@ -149,7 +149,7 @@ namespace SLang.NET.Gen
         // some globals to share between code generation functionality
         private ILProcessor ip;
 
-        public override void Stage1CompileStubs()
+        public override void Stage1RoutineStubs()
         {
             SignatureDefinition = SignatureReference.Resolve();
 
@@ -169,7 +169,7 @@ namespace SLang.NET.Gen
             }
         }
 
-        public override void Stage2CompileBody()
+        public override void Stage2RoutineBody()
         {
             if (NativeMethod == null)
                 throw new CompilationStageException(Context, this, 2);
