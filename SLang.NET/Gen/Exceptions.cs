@@ -20,7 +20,8 @@ namespace SLang.NET.Gen
             Literal = literal;
         }
 
-        public override string Message => $@"Unable to parse ""{Unit}"" literal ""{Literal}""";
+        public override string Message =>
+            $@"Unable to parse ""{Unit}"" literal ""{Literal}""";
     }
 
     public class UnitNotFoundException : CompilerException
@@ -33,6 +34,9 @@ namespace SLang.NET.Gen
             Context = ctx;
             Unit = unit;
         }
+
+        public override string Message =>
+            $"Unit not found: {Unit}";
     }
 
     public class RoutineNotFoundException : CompilerException
@@ -45,6 +49,9 @@ namespace SLang.NET.Gen
             Context = ctx;
             Routine = routine;
         }
+
+        public override string Message =>
+            $"Routine not found: {Routine}";
     }
 
     public class CompilationStageException : CompilerException
