@@ -21,6 +21,12 @@ Report will be generated and printed on standard output in plain text format.
 
 TODO: output in JSON format.
 
+### Exit Code
+
+ * 0: OK
+ * 1: One or more tests have failed
+ * 2: Command line arguments error
+
 ## Structure
 
 Test runner executes _test cases_. Test cases contain source code to compile and
