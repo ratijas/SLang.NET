@@ -1,12 +1,15 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using MoreLinq;
 using Newtonsoft.Json;
 using SLang.IR;
 using SLang.IR.JSON;
 using SLang.NET.Gen;
 using FormatException = SLang.IR.JSON.FormatException;
+using RunProcessAsTask;
 
 namespace SLang.NET.Test
 {
@@ -52,38 +55,42 @@ namespace SLang.NET.Test
             else
             {
                 report.Status = Status.Running;
-
-                var ast = StageParser(report);
-
-                if (report.ParserPass && Meta.Stages.Parser.Pass)
-                {
-                    StageCompile(report, ast);
-
-                    if (report.CompilerPass && Meta.Stages.Compiler.Pass)
-                    {
-                        StagePeVerify(report);
-                        StageIldasm();
-
-                        if (report.PeVerifyPass && Meta.Stages.PeVerify.Pass)
-                        {
-                            StageRun(report);
-                        }
-                    }
-                }
-
-                report.ResolveStatus();
+                report.Complete = Complete(report);
             }
 
             return report;
         }
 
-        private Compilation StageParser(Report report)
+        private async Task Complete(Report report)
+        {
+            var ast = await StageParser(report);
+
+            if (report.ParserPass && Meta.Stages.Parser.Pass)
+            {
+                await StageCompile(report, ast);
+
+                if (report.CompilerPass && Meta.Stages.Compiler.Pass)
+                {
+                    await StagePeVerify(report);
+                    await StageIldasm();
+
+                    if (report.PeVerifyPass && Meta.Stages.PeVerify.Pass)
+                    {
+                        await StageRun(report);
+                    }
+                }
+            }
+
+            report.ResolveStatus();
+        }
+
+        private async Task<Compilation> StageParser(Report report)
         {
             var meta = Meta.Stages.Parser;
 
             try
             {
-                var ir = StageParserDeserialize();
+                var ir = await StageParserDeserialize();
                 var parser = new Parser();
                 Compilation root = parser.ParseCompilation(ir);
 
@@ -119,22 +126,23 @@ namespace SLang.NET.Test
             }
         }
 
-        private JsonEntity StageParserDeserialize()
+        private async Task<JsonEntity> StageParserDeserialize()
         {
             using (var inputStream = SourceJsonInfo.OpenText())
             {
-                return _serializer.Deserialize<JsonEntity>(new JsonTextReader(inputStream));
+                var content = await inputStream.ReadToEndAsync();
+                return _serializer.Deserialize<JsonEntity>(new JsonTextReader(new StringReader(content)));
             }
         }
 
-        private void StageCompile(Report report, Compilation compilation)
+        private async Task StageCompile(Report report, Compilation compilation)
         {
             var meta = Meta.Stages.Compiler;
 
             try
             {
                 var asm = Compiler.CompileToIL(compilation, DllInfo.Name);
-                asm.Write(DllInfo.FullName);
+                await Task.Run(() => asm.Write(DllInfo.FullName));
 
                 report.CompilerPass = meta.Pass;
                 if (!meta.Pass)
@@ -164,28 +172,19 @@ namespace SLang.NET.Test
             }
         }
 
-        private void StagePeVerify(Report report)
+        private async Task StagePeVerify(Report report)
         {
             var meta = Meta.Stages.PeVerify;
 
-            using (var process = new Process
+            using (var process = await ProcessEx.RunAsync(new ProcessStartInfo
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = Options.Singleton.PeVerify,
-                    ArgumentList = {DllInfo.FullName},
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            })
+                FileName = Options.Singleton.PeVerify,
+                ArgumentList = {DllInfo.FullName},
+            }))
             {
-                process.Start();
-                process.WaitForExit();
-
                 var pass = process.ExitCode == 0;
-                var error = process.StandardOutput.ReadToEnd();
+                var error = string.Join("\n", process.StandardOutput);
+                // NOT an Environment.NewLine because meta.json should contain only \n
 
                 if (meta.Pass && pass)
                 {
@@ -216,105 +215,90 @@ namespace SLang.NET.Test
             }
         }
 
-        private void StageIldasm()
+        private async Task StageIldasm()
         {
             if (Options.Singleton.SkipIldasm) return;
-
-            using (var process = new Process
+            using (var process = await ProcessEx.RunAsync(new ProcessStartInfo
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = Options.Singleton.Ildasm,
-                    ArgumentList = {DllInfo.FullName},
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            })
+                FileName = Options.Singleton.Ildasm,
+                ArgumentList = {DllInfo.FullName},
+            }))
             {
-                process.Start();
-                process.WaitForExit();
-
                 using (var output = new StreamWriter(DasmInfo.Open(FileMode.Create, FileAccess.Write)))
                 {
-                    output.Write(process.StandardOutput.ReadToEnd());
+                    foreach (var line in process.StandardOutput)
+                    {
+                        await output.WriteLineAsync(line);
+                    }
                 }
             }
         }
 
-        private void StageRun(Report report)
+        private async Task StageRun(Report report)
         {
             var meta = Meta.Stages.Run;
             if (!meta.Run) return;
 
-            GenerateRunTimeConfig();
+            await GenerateRunTimeConfig();
 
-            var info = new ProcessStartInfo
-            {
-                FileName = Options.Singleton.Runtime,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            };
+            var info = new ProcessStartInfo {FileName = Options.Singleton.Runtime};
+
             info.ArgumentList.Add(DllInfo.FullName);
             if (Options.Singleton.Runtime.Equals("dotnet"))
                 info.ArgumentList.Add("--");
             meta.Args.ForEach(info.ArgumentList.Add);
 
-            using (var process = new Process {StartInfo = info})
+            var taskCts = new CancellationTokenSource();
+            var timerCts = new CancellationTokenSource();
+
+            var task = ProcessEx.RunAsync(info, taskCts.Token);
+            var timer = Task.Delay(meta.TimeoutSeconds * 1000, timerCts.Token);
+
+            if (task != await Task.WhenAny(task, timer))
             {
-                process.Start();
-                var exited = process.WaitForExit(meta.TimeoutSeconds * 1000);
+                taskCts.Cancel(); // timer completed, get rid of task
 
-                if (!exited)
+                report.RunPass = false;
+                report.RunError = "Timeout";
+            }
+            else
+            {
+                timerCts.Cancel(); // task completed, get rid of timer
+
+                using (var process = await task)
                 {
-                    try
+                    var output = string.Join("\n", process.StandardOutput);
+                    var error = string.Join("\n", process.StandardError);
+
+                    if (meta.ExitCode != process.ExitCode)
                     {
-                        process.Kill();
+                        report.RunPass = false;
+                        report.RunError = $"Exit code (expected: {meta.ExitCode}, actual: {process.ExitCode})";
                     }
-                    catch (InvalidOperationException)
+                    else if (!meta.Output.IsMatch(output))
                     {
-                        // don't care
+                        report.RunPass = false;
+                        report.RunError = $@"Output mismatch (expected: {meta.Output.Pattern}, actual: ""{output}"")";
                     }
-
-                    report.RunPass = false;
-                    report.RunError = "Timeout";
-                    return;
-                }
-
-                var output = process.StandardOutput.ReadToEnd();
-                var error = process.StandardError.ReadToEnd();
-
-                if (meta.ExitCode != process.ExitCode)
-                {
-                    report.RunPass = false;
-                    report.RunError = $"Exit code (expected: {meta.ExitCode}, actual: {process.ExitCode})";
-                }
-                else if (!meta.Output.IsMatch(output))
-                {
-                    report.RunPass = false;
-                    report.RunError = $@"Output mismatch (expected: {meta.Output.Pattern}, actual: ""{output}"")";
-                }
-                else if (!meta.Error.IsMatch(error))
-                {
-                    report.RunPass = false;
-                    report.RunError = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
-                }
-                else
-                {
-                    report.RunPass = true;
+                    else if (!meta.Error.IsMatch(error))
+                    {
+                        report.RunPass = false;
+                        report.RunError = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
+                    }
+                    else
+                    {
+                        report.RunPass = true;
+                    }
                 }
             }
         }
 
-        private void GenerateRunTimeConfig()
+        private async Task GenerateRunTimeConfig()
         {
             if (Options.Singleton.Runtime.Equals("dotnet"))
                 using (var file = new StreamWriter(RunTimeConfigJsonInfo.Open(FileMode.Create, FileAccess.Write)))
                 {
-                    file.Write(RunTimeConfigJson);
+                    await file.WriteAsync(RunTimeConfigJson);
                 }
         }
 

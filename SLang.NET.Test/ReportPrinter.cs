@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using MoreLinq.Extensions;
 
 namespace SLang.NET.Test
@@ -22,14 +23,16 @@ namespace SLang.NET.Test
 
         public void Print(IEnumerable<Report> reports)
         {
-            Out.WriteLine($"Running test cases");
+            Out.WriteLine("Running test cases");
             Hr();
             foreach (var report in reports)
             {
                 Print(report);
+                report.Complete.GetAwaiter().GetResult();
+                Rewrite();
+                Print(report);
                 Summary.Add(report);
             }
-
             Hr();
             PrintSummary();
             Out.WriteLine("End of report");
@@ -49,25 +52,23 @@ namespace SLang.NET.Test
         {
             var stage = report.GetStage();
             var error = report.GetError();
-            Tab();
-            Out.WriteLine($"Stage: {stage}");
-            Tab();
-            Out.WriteLine($"Error: {error}");
+            Tab(); Out.WriteLine($"Stage: {stage}");
+            Tab(); Out.WriteLine($"Error: {error}");
         }
 
         private void PrintSummary()
         {
             Out.WriteLine("Summary");
-            Tab();
-            Out.WriteLine($"Passed:     {Summary.Passed}");
-            Tab();
-            Out.WriteLine($"Failed:     {Summary.Failed}");
-            Tab();
-            Out.WriteLine($"Skipped:    {Summary.Skipped}");
-            Tab();
-            Out.WriteLine($"===============");
-            Tab();
-            Out.WriteLine($"Total:      {Summary.Total}");
+            Tab(); Out.WriteLine($"Passed:     {Summary.Passed}");
+            Tab(); Out.WriteLine($"Failed:     {Summary.Failed}");
+            Tab(); Out.WriteLine($"Skipped:    {Summary.Skipped}");
+            Tab(); Out.WriteLine($"===============");
+            Tab(); Out.WriteLine($"Total:      {Summary.Total}");
+        }
+
+        private void Rewrite()
+        {
+            Console.CursorTop -= 1;
         }
 
         private void Tab()
