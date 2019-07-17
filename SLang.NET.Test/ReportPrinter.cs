@@ -8,6 +8,7 @@ namespace SLang.NET.Test
     public class ReportPrinter
     {
         public TextWriter Out;
+        private Summary summary = new Summary();
 
         public ReportPrinter(TextWriter writer)
         {
@@ -24,7 +25,9 @@ namespace SLang.NET.Test
             Out.WriteLine($"Running {reports.Count} test cases");
             Hr();
             reports.ForEach(Print);
+            reports.ForEach(summary.Add);
             Hr();
+            PrintSummary();
             Out.WriteLine("End of report");
         }
 
@@ -46,6 +49,16 @@ namespace SLang.NET.Test
             Tab(); Out.WriteLine($"Error: {error}");
         }
 
+        private void PrintSummary()
+        {
+            Out.WriteLine("Summary");
+            Tab(); Out.WriteLine($"Passed:     {summary.Passed}");
+            Tab(); Out.WriteLine($"Failed:     {summary.Failed}");
+            Tab(); Out.WriteLine($"Skipped:    {summary.Skipped}");
+            Tab(); Out.WriteLine($"===============");
+            Tab(); Out.WriteLine($"Total:      {summary.Total}");
+        }
+
         private void Tab()
         {
             Out.Write("\t");
@@ -54,6 +67,31 @@ namespace SLang.NET.Test
         private void Hr()
         {
             Out.WriteLine(new string('=', 60));
+        }
+
+        private class Summary
+        {
+            public int Passed;
+            public int Failed;
+            public int Skipped;
+            public int Total;
+
+            public void Add(Report report)
+            {
+                Total += 1;
+                switch (report.Status)
+                {
+                    case Status.Passed:
+                        Passed += 1;
+                        break;
+                    case Status.Failed:
+                        Failed += 1;
+                        break;
+                    case Status.Skipped:
+                        Skipped += 1;
+                        break;
+                }
+            }
         }
     }
 }
