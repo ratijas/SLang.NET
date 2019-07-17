@@ -2,7 +2,9 @@
   "stages": {
     "compiler": {
       "pass": false,
-      "error": "TypeMismatchException (expected: String, actual: System.Int32)"
+      "error": {
+        "regex": "TypeMismatchException \\(expected: String, actual: System\\.Int(32|64)\\)"
+      }
     }
   }
 }

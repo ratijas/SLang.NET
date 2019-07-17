@@ -63,6 +63,32 @@ Default metadata values are:
 }
 ```
 
+
+`error` and `output` values are special string matching objects.
+
+String matching object formats:
+
+ 1. Literal AS IS
+    ```json
+    { "error": "TypeMismatch" }
+    ```
+ 2. Regular expression
+    ```json
+    {
+      "error": {
+        "regex": "actual type is Int(32|64)"
+      }
+    }
+    ```
+ 3. Ignore (always matches)
+    ```json
+    {
+      "error": {
+        "ignore": true
+      }
+    }
+    ```
+
 ### Stages
 
 Compilation is a process of executing several steps (stages) in particular

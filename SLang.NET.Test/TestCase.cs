@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using MoreLinq;
 using Newtonsoft.Json;
 using SLang.IR;
@@ -42,7 +39,7 @@ namespace SLang.NET.Test
 
         private JsonSerializer _serializer = new JsonSerializer();
 
-        public virtual Report Run()
+        public Report Run()
         {
             var report = new Report(this);
             var ast = StageParser(report);
@@ -83,9 +80,25 @@ namespace SLang.NET.Test
             }
             catch (FormatException e)
             {
-                report.ParserError = e.Message;
-                // TODO: more flexible error matching
-                report.ParserPass = !meta.Pass && report.ParserError.Equals(meta.Error);
+                var error = e.Message;
+
+                if (meta.Pass)
+                {
+                    report.ParserPass = false;
+                    report.ParserError = error;
+                }
+                else if (!meta.Pass)
+                {
+                    if (meta.Error.IsMatch(error))
+                    {
+                        report.ParserPass = true;
+                    }
+                    else
+                    {
+                        report.ParserPass = false;
+                        report.ParserError = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
+                    }
+                }
 
                 return null;
             }
@@ -114,9 +127,25 @@ namespace SLang.NET.Test
             }
             catch (Exception e)
             {
-                report.CompilerError = e.Message;
-                // TODO: more flexible error matching
-                report.CompilerPass = !meta.Pass && report.CompilerError.Equals(meta.Error);
+                var error = e.Message;
+
+                if (meta.Pass)
+                {
+                    report.CompilerPass = false;
+                    report.CompilerError = error;
+                }
+                else if (!meta.Pass)
+                {
+                    if (meta.Error.IsMatch(error))
+                    {
+                        report.CompilerPass = true;
+                    }
+                    else
+                    {
+                        report.CompilerPass = false;
+                        report.CompilerError = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
+                    }
+                }
             }
         }
 
@@ -143,17 +172,31 @@ namespace SLang.NET.Test
                 var pass = process.ExitCode == 0;
                 var error = process.StandardOutput.ReadToEnd();
 
-                if (pass)
+                if (meta.Pass && pass)
                 {
-                    report.PeVerifyPass = meta.Pass;
-                    if (!meta.Pass)
-                        report.PeVerifyError = "Shouldn't have passed";
+                    report.PeVerifyPass = true;
                 }
-                else
+                else if (meta.Pass && !pass)
                 {
+                    report.PeVerifyPass = false;
                     report.PeVerifyError = error;
-                    // TODO: more flexible error matching
-                    report.PeVerifyPass = !meta.Pass && report.PeVerifyError.Equals(meta.Error);
+                }
+                else if (!meta.Pass && pass)
+                {
+                    report.PeVerifyPass = false;
+                    report.PeVerifyError = "Shouldn't have passed";
+                }
+                else if (!meta.Pass && !pass)
+                {
+                    if (meta.Error.IsMatch(error))
+                    {
+                        report.PeVerifyPass = true;
+                    }
+                    else
+                    {
+                        report.PeVerifyPass = false;
+                        report.PeVerifyError = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
+                    }
                 }
             }
         }
@@ -199,31 +242,28 @@ namespace SLang.NET.Test
                     return;
                 }
 
-                var stdout = process.StandardOutput.ReadToEnd();
-                var stderr = process.StandardError.ReadToEnd();
+                var output = process.StandardOutput.ReadToEnd();
+                var error = process.StandardError.ReadToEnd();
 
                 if (meta.ExitCode != process.ExitCode)
                 {
                     report.RunPass = false;
                     report.RunError = $"Exit code (expected: {meta.ExitCode}, actual: {process.ExitCode})";
-                    return;
                 }
-
-                if (meta.Output != stdout)
+                else if (!meta.Output.IsMatch(output))
                 {
                     report.RunPass = false;
-                    report.RunError = $"Standard output mismatch (expected: \"{meta.Output}\", actual: \"{stdout}\")";
-                    return;
+                    report.RunError = $@"Output mismatch (expected: {meta.Output.Pattern}, actual: ""{output}"")";
                 }
-
-                if (meta.Error != stderr)
+                else if (!meta.Error.IsMatch(error))
                 {
                     report.RunPass = false;
-                    report.RunError = $"Standard error mismatch (expected: \"{meta.Error}\", actual: \"{stderr}\")";
-                    return;
+                    report.RunError = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
                 }
-
-                report.RunPass = true;
+                else
+                {
+                    report.RunPass = true;
+                }
             }
         }
 

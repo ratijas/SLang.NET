@@ -2,6 +2,16 @@ namespace SLang.NET.Test
 {
     public class Report
     {
+        //                |   should pass   |    should NOT pass
+        // +--------------+-----------------+------------------------+
+        //  did     pass  |      OK         |  Shouldn't have passed
+        //  did NOT pass  |     error       |      match error
+
+        //                       | should NOT pass && did NOT pass
+        // +---------------------+---------------------------------+
+        //  error matches        |                OK
+        //  error does NOT match |          Error mismatch
+
         public TestCase TestCase;
 
         public bool ParserPass = true;

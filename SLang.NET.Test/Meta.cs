@@ -28,7 +28,8 @@ namespace SLang.NET.Test
                 public bool Pass = true;
 
                 [JsonProperty(PropertyName = "error")]
-                public string Error = string.Empty;
+                [JsonConverter(typeof(MatcherJsonConverter))]
+                public Matcher Error = new Matcher.Exact("");
             }
 
             public class _Compiler
@@ -37,7 +38,8 @@ namespace SLang.NET.Test
                 public bool Pass = true;
                 
                 [JsonProperty(PropertyName = "error")]
-                public string Error = string.Empty;
+                [JsonConverter(typeof(MatcherJsonConverter))]
+                public Matcher Error = new Matcher.Exact("");
             }
 
             public class _PeVerify
@@ -46,7 +48,8 @@ namespace SLang.NET.Test
                 public bool Pass = true;
 
                 [JsonProperty(PropertyName = "error")]
-                public string Error = string.Empty;
+                [JsonConverter(typeof(MatcherJsonConverter))]
+                public Matcher Error = new Matcher.Exact("");
             }
 
             public class _Run
@@ -61,10 +64,12 @@ namespace SLang.NET.Test
                 public int ExitCode = 0;
 
                 [JsonProperty(PropertyName = "output")]
-                public string Output = string.Empty;
+                [JsonConverter(typeof(MatcherJsonConverter))]
+                public Matcher Output = new Matcher.Exact("");
 
                 [JsonProperty(PropertyName = "error")]
-                public string Error = string.Empty;
+                [JsonConverter(typeof(MatcherJsonConverter))]
+                public Matcher Error = new Matcher.Exact("");
 
                 [JsonProperty(PropertyName = "timeout")]
                 public int TimeoutSeconds = 10;
