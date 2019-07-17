@@ -21,6 +21,8 @@ namespace SLang.IR
     public sealed class Identifier : Entity
     {
         public string Value { get; }
+        
+        public static Identifier Empty = new Identifier(string.Empty);
 
         public Identifier(string value)
         {

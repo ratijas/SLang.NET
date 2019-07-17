@@ -78,6 +78,7 @@ namespace SLang.NET.Gen
     {
         public abstract bool IsNative { get; }
         public ISignature<UnitReference> SignatureReference { get; protected set; }
+        public ISignature<UnitDefinition> SignatureDefinition { get; protected set; }
         public new UnitDefinition Unit { get; protected set; }
 
         /// <summary>
@@ -150,7 +151,22 @@ namespace SLang.NET.Gen
 
         public override void Stage1CompileStubs()
         {
-            MakeMethodWithSignature();
+            SignatureDefinition = SignatureReference.Resolve();
+
+            // name, attributes & return type
+            MethodAttributes attributes = MethodAttributes.Public | MethodAttributes.Static;
+            NativeMethod =
+                new MethodDefinition(
+                    Name.Value,
+                    attributes,
+                    SignatureDefinition.ReturnType.NativeType);
+
+            // parameters types
+            foreach (var param in SignatureDefinition.Parameters)
+            {
+                var nativeParam = new ParameterDefinition(param.Type.NativeType) {Name = param.Name.Value};
+                NativeMethod.Parameters.Add(nativeParam);
+            }
         }
 
         public override void Stage2CompileBody()
@@ -173,26 +189,6 @@ namespace SLang.NET.Gen
 
             FixInitLocals();
             ip = null;
-        }
-
-        private void MakeMethodWithSignature()
-        {
-            var signature = SignatureReference.Resolve();
-
-            // name, attributes & return type
-            MethodAttributes attributes = MethodAttributes.Public | MethodAttributes.Static;
-            NativeMethod =
-                new MethodDefinition(
-                    Name.Value,
-                    attributes,
-                    signature.ReturnType.NativeType);
-
-            // parameters types
-            foreach (var (name, unit) in signature.Parameters)
-            {
-                var param = new ParameterDefinition(unit.NativeType) {Name = name.Value};
-                NativeMethod.Parameters.Add(param);
-            }
         }
 
         private void GenerateReturn(Return r)
