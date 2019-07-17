@@ -50,7 +50,7 @@ namespace SLang.NET.Gen
         public SignatureReference(Context ctx, RoutineDeclaration routine)
         {
             ReturnType = new UnitReference(ctx, routine.ReturnType);
-            Parameters.AddRange(routine.Arguments.Select(argument =>
+            Parameters.AddRange(routine.Parameters.Select(argument =>
                 (argument.Name, new UnitReference(ctx, argument.Type))));
         }
 
