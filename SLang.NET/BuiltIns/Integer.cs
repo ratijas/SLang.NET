@@ -17,7 +17,7 @@ namespace SLang.NET.BuiltIns
         public override void LoadFromLiteral(string literal, ILProcessor ip)
         {
             if (!int.TryParse(literal, out var result))
-                throw new FormatException($"Unable to parse integer literal: '{literal}'");
+                throw new LoadFromLiteralException(this, literal);
 
             ip.Emit(OpCodes.Ldc_I4, result);
         }

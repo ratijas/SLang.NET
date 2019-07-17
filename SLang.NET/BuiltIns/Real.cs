@@ -20,7 +20,7 @@ namespace SLang.NET.BuiltIns
             if (!double.TryParse(literal, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat,
                 out var result))
             {
-                throw new FormatException($"Unable to parse real number literal: '{literal}'");
+                throw new LoadFromLiteralException(this, literal);
             }
 
             ip.Emit(OpCodes.Ldc_R8, result);

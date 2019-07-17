@@ -1,11 +1,26 @@
 using System;
 using Mono.Cecil;
+using SLang.IR;
 
 namespace SLang.NET.Gen
 {
     // TODO: improve diagnostics, including call site information and unified type system.
     public class CompilerException : Exception
     {
+    }
+
+    public class LoadFromLiteralException : CompilerException
+    {
+        public UnitReference Unit { get; }
+        public string Literal { get; }
+
+        public LoadFromLiteralException(UnitReference unit, string literal)
+        {
+            Unit = unit;
+            Literal = literal;
+        }
+
+        public override string Message => $@"Unable to parse ""{Unit}"" literal ""{Literal}""";
     }
 
     public class UnitNotFoundException : CompilerException
@@ -48,7 +63,6 @@ namespace SLang.NET.Gen
 
     public class ArityMismatchException : CompilerException
     {
-
         public RoutineDefinition Routine;
         public int Expected => Routine.SignatureReference.Parameters.Count;
         public int Actual { get; }
