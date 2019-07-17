@@ -2,7 +2,48 @@
   "type": "COMPILATION",
   "children": [
     {
-      "type": "DECLARATION_LIST"
+      "type": "DECLARATION_LIST",
+      "children": [
+        {
+          "type": "ROUTINE",
+          "children": [
+            {
+              "type": "IDENTIFIER",
+              "value": "dummy_routine"
+            },
+            null,
+            {
+              "type": "PARAMETER_LIST"
+            },
+            {
+              "type": "UNIT_REF",
+              "value": "Integer"
+            },
+            null,
+            {
+              "type": "ENTITY_LIST",
+              "children": [
+                {
+                  "type": "RETURN",
+                  "children": [
+                    {
+                      "type": "LITERAL",
+                      "value": "42",
+                      "children": [
+                        {
+                          "type": "UNIT_REF",
+                          "value": "Integer"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            null
+          ]
+        }
+      ]
     },
     {
       "type": "ROUTINE",
@@ -24,7 +65,19 @@
           "type": "ENTITY_LIST",
           "children": [
             {
-              "type": "RETURN"
+              "type": "CALL",
+              "children": [
+                {
+                  "type": "CALLEE",
+                  "children": [
+                    null,
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "dummy_routine"
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },

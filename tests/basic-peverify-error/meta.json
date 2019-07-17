@@ -2,7 +2,7 @@
   "stages": {
     "peverify": {
       "pass": false,
-      "error": "In method: SLang.$GlobalUnit::$anonymous()\nError: Stack underflow, required 1, but have 0 at 0x0000\nError count: 1\n"
+      "error": "In method: SLang.$GlobalUnit::$anonymous()\nError: Run ahead of method code at 0x0005\nError count: 1\n"
     }
   }
 }

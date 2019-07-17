@@ -2,7 +2,7 @@
   "stages": {
     "compiler": {
       "pass": false,
-      "error": "Return type mismatch. Expected: System.String, actual: System.Int32"
+      "error": "TypeMismatchException (expected: String, actual: System.Int32)"
     }
   }
 }
