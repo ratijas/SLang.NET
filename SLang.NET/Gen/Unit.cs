@@ -100,6 +100,7 @@ namespace SLang.NET.Gen
 
         public abstract void LoadFromLiteral(string literal, ILProcessor ip);
 
+
         public override void Stage1CompileStubs()
         {
         }
