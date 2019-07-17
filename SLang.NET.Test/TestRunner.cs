@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SLang.NET.Test
 {
@@ -28,11 +29,11 @@ namespace SLang.NET.Test
                 (lhs, rhs) => string.Compare(lhs.Name, rhs.Name, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        public IEnumerable<Report> RunAll()
+        public IEnumerable<Task<Report>> RunAll()
         {
             foreach (var t in TestCases)
             {
-                Report report;
+                Task<Report> report;
                 try
                 {
                     report = t.Run();

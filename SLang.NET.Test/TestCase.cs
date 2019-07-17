@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using MoreLinq;
 using Newtonsoft.Json;
 using SLang.IR;
@@ -41,7 +42,7 @@ namespace SLang.NET.Test
 
         private JsonSerializer _serializer = new JsonSerializer();
 
-        public Report Run()
+        public async Task<Report> Run()
         {
             var report = new Report(this);
 

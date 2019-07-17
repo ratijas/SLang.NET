@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using MoreLinq.Extensions;
 
 namespace SLang.NET.Test
@@ -20,12 +21,13 @@ namespace SLang.NET.Test
             Out = Console.Out;
         }
 
-        public void Print(IEnumerable<Report> reports)
+        public void Print(IEnumerable<Task<Report>> reports)
         {
-            Out.WriteLine($"Running test cases");
+            Out.WriteLine("Running test cases");
             Hr();
-            foreach (var report in reports)
+            foreach (var task in reports)
             {
+                var report = task.Result;
                 Print(report);
                 Summary.Add(report);
             }
