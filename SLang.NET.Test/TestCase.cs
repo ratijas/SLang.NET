@@ -54,7 +54,7 @@ namespace SLang.NET.Test
             {
                 report.Status = Status.Running;
 
-                var ast = StageParser(report);
+                var ast = await StageParser(report);
 
                 if (report.ParserPass && Meta.Stages.Parser.Pass)
                 {
@@ -78,13 +78,13 @@ namespace SLang.NET.Test
             return report;
         }
 
-        private Compilation StageParser(Report report)
+        private async Task<Compilation> StageParser(Report report)
         {
             var meta = Meta.Stages.Parser;
 
             try
             {
-                var ir = StageParserDeserialize();
+                var ir = await StageParserDeserialize();
                 var parser = new Parser();
                 Compilation root = parser.ParseCompilation(ir);
 
@@ -120,11 +120,12 @@ namespace SLang.NET.Test
             }
         }
 
-        private JsonEntity StageParserDeserialize()
+        private async Task<JsonEntity> StageParserDeserialize()
         {
             using (var inputStream = SourceJsonInfo.OpenText())
             {
-                return _serializer.Deserialize<JsonEntity>(new JsonTextReader(inputStream));
+                var content = await inputStream.ReadToEndAsync();
+                return _serializer.Deserialize<JsonEntity>(new JsonTextReader(new StringReader(content)));
             }
         }
 
