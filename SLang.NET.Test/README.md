@@ -17,9 +17,11 @@ For example:
 
 `$ SLang.NET.Test declare-unit call-static-routine-return-integer`
 
-Report will be generated and printed on standard output in plain text format.
+For more information try this:
 
-TODO: output in JSON format.
+`$ SLang.NET.Test --help`
+
+Report will be generated and printed on standard output in plain text format.
 
 ### Exit Code
 
