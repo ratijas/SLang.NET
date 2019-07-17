@@ -358,3 +358,5 @@ MigrationBackup/
 *.iml
 out
 gen
+tests/*/*.dll
+tests/*/*.runtimeconfig.json

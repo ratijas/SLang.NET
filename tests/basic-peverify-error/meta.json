@@ -1,0 +1,8 @@
+{
+  "stages": {
+    "peverify": {
+      "pass": false,
+      "error": "In method: SLang.$GlobalUnit::$anonymous()\nError: Run ahead of method code at 0x0005\nError count: 1\n"
+    }
+  }
+}

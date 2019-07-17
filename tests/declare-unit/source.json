@@ -1,0 +1,59 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": [
+        {
+          "type": "UNIT",
+          "children": [
+            {
+              "type": "IDENTIFIER",
+              "value": "MyCoolUnit"
+            },
+            {
+              "type": "REF_VAL_SPEC",
+              "value": "ref"
+            },
+            {
+              "type": "CONCURRENT_SPEC"
+            },
+            {
+              "type": "FOREIGN_SPEC"
+            },
+            {
+              "type": "DECLARATION_LIST"
+            },
+            {
+              "type": "EXPRESSION_LIST"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous"
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST"
+        },
+        null,
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "RETURN"
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}

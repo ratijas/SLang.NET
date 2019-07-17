@@ -1,0 +1,8 @@
+{
+  "stages": {
+    "compiler": {
+      "pass": false,
+      "error": "TypeMismatchException (expected: String, actual: System.Int32)"
+    }
+  }
+}

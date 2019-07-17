@@ -1,0 +1,47 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST"
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous"
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST"
+        },
+        {
+          "type": "UNIT_REF",
+          "value": "String"
+        },
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "RETURN",
+              "children": [
+                {
+                  "type": "LITERAL",
+                  "value": "42",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "Integer"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}

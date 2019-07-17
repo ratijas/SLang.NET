@@ -1,0 +1,8 @@
+{
+  "stages": {
+    "compiler": {
+      "pass": false,
+      "error": "ArityMismatchException at $GlobalUnit::routine_takes_parameters (expected: 2, actual: 3)"
+    }
+  }
+}

@@ -10,31 +10,29 @@
             {
               "type": "IDENTIFIER",
               "value": "global_routine_which_returns_integer",
-              "children": []
             },
             null,
             {
-              "type": "ENTITY_LIST"
+              "type": "PARAMETER_LIST"
             },
             {
-              "type":"UNIT_REF",
-              "value":"Integer"
+              "type": "UNIT_REF",
+              "value": "Integer"
             },
             null,
             {
-              "type":"ENTITY_LIST",
-              "value":null,
-              "children":[
+              "type": "ENTITY_LIST",
+              "children": [
                 {
-                  "type":"RETURN",
-                  "children":[
+                  "type": "RETURN",
+                  "children": [
                     {
-                      "type":"LITERAL",
-                      "value":"4294967297",
-                      "children":[
+                      "type": "LITERAL",
+                      "value": "42",
+                      "children": [
                         {
-                          "type":"UNIT_REF",
-                          "value":"Integer"
+                          "type": "UNIT_REF",
+                          "value": "Integer"
                         }
                       ]
                     }
@@ -53,31 +51,27 @@
         {
           "type": "IDENTIFIER",
           "value": "$anonymous",
-          "children": []
         },
         null,
         {
-          "type": "ENTITY_LIST"
+          "type": "PARAMETER_LIST"
         },
         {
-          "type":"UNIT_REF",
-          "value":"Integer"
+          "type": "UNIT_REF",
+          "value": "Integer"
         },
         null,
         {
           "type": "ENTITY_LIST",
-          "value": null,
           "children": [
             {
               "type": "RETURN",
               "children": [
                 {
                   "type": "CALL",
-                  "value": null,
                   "children": [
                     {
                       "type": "CALLEE",
-                      "value": null,
                       "children": [
                         null,
                         {

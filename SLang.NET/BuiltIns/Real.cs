@@ -17,8 +17,11 @@ namespace SLang.NET.BuiltIns
 
         public override void LoadFromLiteral(string literal, ILProcessor ip)
         {
-            if (!double.TryParse(literal, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out var result))
+            if (!double.TryParse(literal, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat,
+                out var result))
+            {
                 throw new FormatException($"Unable to parse real number literal: '{literal}'");
+            }
 
             ip.Emit(OpCodes.Ldc_R8, result);
         }

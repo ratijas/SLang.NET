@@ -1,12 +1,11 @@
 ﻿using System;
 using System.IO;
 using CommandLine;
-using Mono.Cecil;
 using Newtonsoft.Json;
 using SLang.IR;
 using SLang.IR.JSON;
 using SLang.NET.Gen;
-using Parser = SLang.IR.JSON.Parser;
+using Parser = CommandLine.Parser;
 
 namespace SLang.NET
 {
@@ -14,7 +13,7 @@ namespace SLang.NET
     {
         static void Main(params string[] args)
         {
-            new CommandLine.Parser(settings =>
+            new Parser(settings =>
                 {
                     settings.IgnoreUnknownArguments = false;
                     settings.AutoHelp = false;
@@ -42,18 +41,19 @@ namespace SLang.NET
                 }
             }
 
-            var parser = new Parser();
+            var parser = new IR.JSON.Parser();
             Entity root = parser.Parse(ir);
 
-            var jsonOutputPath = o.Output.ToString() + ".ast.json";
-            using (var outputStream =
-                new StreamWriter(
-                    new BufferedStream(
-                        new FileStream(jsonOutputPath, FileMode.Create, FileAccess.Write, FileShare.None))))
-            {
-                JsonSerializer serializer = new JsonSerializer { Formatting = Formatting.Indented };
-                serializer.Serialize(outputStream, root);
-            }
+            if (o.Ast != null)
+                using (var outputStream =
+                    new StreamWriter(
+                        new BufferedStream(
+                            new FileStream(o.Ast.ToString(), FileMode.Create, FileAccess.Write,
+                                FileShare.None))))
+                {
+                    JsonSerializer serializer = new JsonSerializer {Formatting = Formatting.Indented};
+                    serializer.Serialize(outputStream, root);
+                }
 
 
             var dllPath = o.Output;

@@ -17,6 +17,7 @@ namespace SLang.IR.JSON
     public class JsonFormatException : FormatException
     {
         public JsonEntity Entity { get; set; }
+
         public JsonFormatException(JsonEntity entity, string message = null, Exception innerException = null)
             : base(message, innerException)
         {
@@ -37,13 +38,17 @@ namespace SLang.IR.JSON
 
     public class UnexpectedChildNodeException : IrEntityException
     {
-        public Entity Child { get => Entity; set => Entity = value; }
+        public Entity Child
+        {
+            get => Entity;
+            set => Entity = value;
+        }
 
         /// <summary>
         /// Parent is optional. For example, top-level entity does not have a parent.
         /// </summary>
         public Entity Parent { get; set; }
-        
+
         public UnexpectedChildNodeException(
             Entity child,
             Entity parent = null,

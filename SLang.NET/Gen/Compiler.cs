@@ -15,10 +15,10 @@ namespace SLang.NET.Gen
             var context = new Context(asm.MainModule);
 
             var globalAnonymousUnit =
-                context.GlobalUnit = new SLangUnitDefinition(context, new Identifier("SLang$GlobalUnit"));
+                context.GlobalUnit = new SLangUnitDefinition(context, new Identifier("$GlobalUnit"));
 
             var globalAnonymousRoutine = new SLangRoutineDefinition(globalAnonymousUnit, root.Anonymous);
-            
+
             foreach (var declaration in root.Declarations)
             {
                 switch (declaration)
@@ -43,7 +43,7 @@ namespace SLang.NET.Gen
             context.Compile();
 
             asm.EntryPoint = globalAnonymousRoutine.NativeMethod;
-            
+
             return asm;
         }
     }

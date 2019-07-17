@@ -1,0 +1,112 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": [
+        {
+          "type": "ROUTINE",
+          "children": [
+            {
+              "type": "IDENTIFIER",
+              "value": "routine_takes_parameters"
+            },
+            null,
+            {
+              "type": "PARAMETER_LIST",
+              "children": [
+                {
+                  "type": "PARAMETER",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "Integer"
+                    },
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "x"
+                    }
+                  ]
+                },
+                {
+                  "type": "PARAMETER",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "MyLib.MyAwesomeUnit"
+                    },
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "stuff"
+                    }
+                  ]
+                }
+              ]
+            },
+            null,
+            null,
+            {
+              "type": "ENTITY_LIST",
+              "children": [
+                {
+                  "type": "RETURN"
+                }
+              ]
+            },
+            null
+          ]
+        },
+        {
+          "type": "UNIT",
+          "children": [
+            {
+              "type": "IDENTIFIER",
+              "value": "MyLib.MyAwesomeUnit"
+            },
+            {
+              "type": "REF_VAL_SPEC",
+              "value": "ref"
+            },
+            {
+              "type": "CONCURRENT_SPEC"
+            },
+            {
+              "type": "FOREIGN_SPEC"
+            },
+            {
+              "type": "DECLARATION_LIST"
+            },
+            {
+              "type": "EXPRESSION_LIST"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous",
+          "children": []
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST"
+        },
+        null,
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "RETURN"
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}
