@@ -360,3 +360,4 @@ out
 gen
 tests/*/*.dll
 tests/*/*.runtimeconfig.json
+tests/*/assembly.il

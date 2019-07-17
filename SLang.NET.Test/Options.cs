@@ -28,9 +28,22 @@ namespace SLang.NET.Test
             HelpText = "Run generated *.dll with given runtime, like dotnet, mono or wine.")]
         public string Runtime { get; set; }
 
+        [Option("skip-ildasm",
+            Required = false,
+            Default = false,
+            HelpText = "Don't run ildasm step.")]
+        public bool SkipIldasm { get; set; }
+
+        [Option(
+            "ildasm",
+            Required = false,
+            Default = "ildasm",
+            HelpText = "Path to ildasm utility, the IL DisAsSeMbler.")]
+        public string Ildasm { get; set; }
+
         [Value(0,
             Required = false,
-            HelpText = "Run only selected test cases")]
+            HelpText = "Run only selected test cases.")]
         public IEnumerable<string> TestCases { get; set; }
     }
 }

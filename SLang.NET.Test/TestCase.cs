@@ -22,6 +22,8 @@ namespace SLang.NET.Test
 
         public FileInfo DllInfo => GetFile($"{Name}.dll");
 
+        public FileInfo DasmInfo => GetFile("assembly.il");
+
         public FileInfo RunTimeConfigJsonInfo => GetFile($"{Name}.runtimeconfig.json");
 
         // TODO: let user specify framework
@@ -60,6 +62,7 @@ namespace SLang.NET.Test
                     if (report.CompilerPass && Meta.Stages.Compiler.Pass)
                     {
                         StagePeVerify(report);
+                        StageIldasm();
 
                         if (report.PeVerifyPass && Meta.Stages.PeVerify.Pass)
                         {
@@ -209,6 +212,33 @@ namespace SLang.NET.Test
                         report.PeVerifyPass = false;
                         report.PeVerifyError = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
                     }
+                }
+            }
+        }
+
+        private void StageIldasm()
+        {
+            if (Options.Singleton.SkipIldasm) return;
+
+            using (var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = Options.Singleton.Ildasm,
+                    ArgumentList = {DllInfo.FullName},
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            })
+            {
+                process.Start();
+                process.WaitForExit();
+
+                using (var output = new StreamWriter(DasmInfo.Open(FileMode.Create, FileAccess.Write)))
+                {
+                    output.Write(process.StandardOutput.ReadToEnd());
                 }
             }
         }
