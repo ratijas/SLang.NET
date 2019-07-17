@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace SLang.NET.Test
 {
     public class Report
@@ -26,6 +28,8 @@ namespace SLang.NET.Test
 
         public bool RunPass = true;
         public string RunError = string.Empty;
+
+        public Task Complete = Task.CompletedTask;
 
         public Report(TestCase testCase)
         {
