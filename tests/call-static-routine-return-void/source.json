@@ -9,8 +9,7 @@
           "children": [
             {
               "type": "IDENTIFIER",
-              "value": "global_routine_which_returns_nothing",
-              "children": []
+              "value": "global_routine_which_returns_nothing"
             },
             null,
             {
@@ -20,13 +19,9 @@
             null,
             {
               "type": "ENTITY_LIST",
-              "value": null,
               "children": [
                 {
-                  "type": "RETURN",
-                  "children": [
-                    null
-                  ]
+                  "type": "RETURN"
                 }
               ]
             },
@@ -40,8 +35,7 @@
       "children": [
         {
           "type": "IDENTIFIER",
-          "value": "$anonymous",
-          "children": []
+          "value": "$anonymous"
         },
         null,
         {
@@ -51,18 +45,15 @@
         null,
         {
           "type": "ENTITY_LIST",
-          "value": null,
           "children": [
             {
               "type": "RETURN",
               "children": [
                 {
                   "type": "CALL",
-                  "value": null,
                   "children": [
                     {
                       "type": "CALLEE",
-                      "value": null,
                       "children": [
                         null,
                         {

@@ -9,8 +9,7 @@
           "children": [
             {
               "type": "IDENTIFIER",
-              "value": "global_routine_which_returns_nothing",
-              "children": []
+              "value": "global_routine_which_returns_nothing"
             },
             null,
             {
@@ -19,12 +18,10 @@
             null,
             null,
             {
-              "type":"ENTITY_LIST",
-              "value":null,
-              "children":[
+              "type": "ENTITY_LIST",
+              "children": [
                 {
-                  "type":"RETURN",
-                  "children":[null]
+                  "type": "RETURN"
                 }
               ]
             },
@@ -38,8 +35,7 @@
       "children": [
         {
           "type": "IDENTIFIER",
-          "value": "$anonymous",
-          "children": []
+          "value": "$anonymous"
         },
         null,
         {
@@ -48,12 +44,10 @@
         null,
         null,
         {
-          "type":"ENTITY_LIST",
-          "value":null,
-          "children":[
+          "type": "ENTITY_LIST",
+          "children": [
             {
-              "type":"RETURN",
-              "children":[]
+              "type": "RETURN"
             }
           ]
         },

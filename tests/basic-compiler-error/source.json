@@ -2,16 +2,14 @@
   "type": "COMPILATION",
   "children": [
     {
-      "type": "DECLARATION_LIST",
-      "children": []
+      "type": "DECLARATION_LIST"
     },
     {
       "type": "ROUTINE",
       "children": [
         {
           "type": "IDENTIFIER",
-          "value": "$anonymous",
-          "children": []
+          "value": "$anonymous"
         },
         null,
         {
@@ -24,18 +22,17 @@
         null,
         {
           "type": "ENTITY_LIST",
-          "value": null,
           "children": [
             {
               "type": "RETURN",
-              "children":[
+              "children": [
                 {
-                  "type":"LITERAL",
-                  "value":"42",
-                  "children":[
+                  "type": "LITERAL",
+                  "value": "42",
+                  "children": [
                     {
-                      "type":"UNIT_REF",
-                      "value":"Integer"
+                      "type": "UNIT_REF",
+                      "value": "Integer"
                     }
                   ]
                 }

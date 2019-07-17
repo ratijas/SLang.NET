@@ -2,16 +2,14 @@
   "type": "COMPILATION",
   "children": [
     {
-      "type": "DECLARATION_LIST",
-      "children": []
+      "type": "DECLARATION_LIST"
     },
     {
       "type": "ROUTINE",
       "children": [
         {
           "type": "IDENTIFIER",
-          "value": "$anonymous",
-          "children": []
+          "value": "$anonymous"
         },
         null,
         {
@@ -21,13 +19,9 @@
         null,
         {
           "type": "ENTITY_LIST",
-          "value": null,
           "children": [
             {
-              "type": "RETURN",
-              "children": [
-                null
-              ]
+              "type": "RETURN"
             }
           ]
         },
