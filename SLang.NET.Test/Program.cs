@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
 using CommandLine;
 
@@ -21,7 +21,7 @@ namespace SLang.NET.Test
             var repo = new TestsRepository(Options.Singleton.TestDirRoot);
             Console.WriteLine($"Test repository root: {repo.BaseDirectory.FullName}");
 
-            var runner = new TestRunner(repo);
+            var runner = new TestRunner(repo, new HashSet<string>(Options.Singleton.TestCases));
             var reports = runner.RunAll();
 
             var printer = new ReportPrinter();
