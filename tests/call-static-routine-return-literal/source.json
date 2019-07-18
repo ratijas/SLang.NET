@@ -9,7 +9,7 @@
           "children": [
             {
               "type": "IDENTIFIER",
-              "value": "global_routine_which_returns_integer",
+              "value": "global_routine_which_returns_integer"
             },
             null,
             {
@@ -50,7 +50,7 @@
       "children": [
         {
           "type": "IDENTIFIER",
-          "value": "$anonymous",
+          "value": "$anonymous"
         },
         null,
         {
