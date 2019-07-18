@@ -1,0 +1,140 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": [
+        {
+          "type": "ROUTINE",
+          "children": [
+            {
+              "type": "IDENTIFIER",
+              "value": "routine_returns_its_argument"
+            },
+            null,
+            {
+              "type": "PARAMETER_LIST",
+              "children": [
+                {
+                  "type": "PARAMETER",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "Integer"
+                    },
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "x"
+                    }
+                  ]
+                },
+                {
+                  "type": "PARAMETER",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "String"
+                    },
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "abc"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "UNIT_REF",
+              "value": "Integer"
+            },
+            null,
+            {
+              "type": "ENTITY_LIST",
+              "children": [
+                {
+                  "type": "RETURN",
+                  "children": [
+                    {
+                      "type": "REFERENCE",
+                      "children": [
+                        {
+                          "type": "IDENTIFIER",
+                          "value": "x"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            null
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous"
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST"
+        },
+        null,
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "CALL",
+              "children": [
+                {
+                  "type": "CALLEE",
+                  "children": [
+                    null,
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "routine_returns_its_argument"
+                    }
+                  ]
+                },
+                {
+                  "type": "EXPRESSION_LIST",
+                  "children": [
+                    {
+                      "type": "LITERAL",
+                      "value": "42",
+                      "children": [
+                        {
+                          "type": "UNIT_REF",
+                          "value": "Integer"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "LITERAL",
+                      "value": "Hello, World!",
+                      "children": [
+                        {
+                          "type": "UNIT_REF",
+                          "value": "String"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "RETURN"
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}

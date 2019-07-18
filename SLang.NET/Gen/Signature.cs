@@ -16,7 +16,7 @@ namespace SLang.NET.Gen
         ISignature<UnitDefinition> Resolve();
     }
 
-    public struct Parameter<T>
+    public partial struct Parameter<T>
     {
         public Identifier Name;
         public T Type;

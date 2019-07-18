@@ -7,7 +7,7 @@ using SLang.IR;
 
 namespace SLang.NET.Gen
 {
-    public class UnitReference
+    public partial class UnitReference
     {
         public Identifier Name { get; }
         public Context Context { get; }
@@ -41,6 +41,11 @@ namespace SLang.NET.Gen
 
             return false;
         }
+
+        /// <summary>
+        /// Shortcut for <c>Equals(Context.TypeSystem.Void)</c>.
+        /// </summary>
+        public bool IsVoid => Equals(Context.TypeSystem.Void);
 
         public override int GetHashCode()
         {
@@ -82,6 +87,16 @@ namespace SLang.NET.Gen
         internal void RegisterRoutine(RoutineDefinition routine)
         {
             Routines.Add(routine);
+        }
+
+        public bool IsAssignableFrom(IHasType other)
+        {
+            return Equals(other.GetType());
+        }
+
+        public bool IsAssignableTo(IHasType other)
+        {
+            return other.GetType().IsAssignableFrom(this);
         }
 
         public abstract void Stage1RoutineStubs();
