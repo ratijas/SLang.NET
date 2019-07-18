@@ -195,7 +195,20 @@ namespace SLang.NET.Gen
 
             ip = NativeMethod.Body.GetILProcessor();
 
-            foreach (var entity in AST.Body)
+            GenerateEntityList(AST.Body);
+
+            FixInitLocals();
+            ip = null;
+        }
+
+        /// <summary>
+        /// Generate block of entities, like routine body or if-then-else branches.
+        /// </summary>
+        /// <para>Stack behavior: entirely controlled by entities in question.</para>
+        /// <param name="entities">"ENTITY_LIST" AST fragment</param>
+        private void GenerateEntityList(List<Entity> entities)
+        {
+            foreach (var entity in entities)
             {
                 switch (entity)
                 {
@@ -206,14 +219,11 @@ namespace SLang.NET.Gen
                     case Return r:
                         GenerateReturn(r);
                         break;
-                    
+
                     default:
                         throw new NotImplementedException("Entity type is not implemented: " + entity.GetType());
                 }
             }
-
-            FixInitLocals();
-            ip = null;
         }
 
         /// <summary>
