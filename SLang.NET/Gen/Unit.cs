@@ -42,6 +42,11 @@ namespace SLang.NET.Gen
             return false;
         }
 
+        /// <summary>
+        /// Shortcut for <c>Equals(Context.TypeSystem.Void)</c>.
+        /// </summary>
+        public bool IsVoid => Equals(Context.TypeSystem.Void);
+
         public override int GetHashCode()
         {
             return Name.GetHashCode();
@@ -82,6 +87,17 @@ namespace SLang.NET.Gen
         internal void RegisterRoutine(RoutineDefinition routine)
         {
             Routines.Add(routine);
+        }
+
+        public bool IsAssignableFrom(UnitDefinition other)
+        {
+            var isAssignable = Equals(other);
+            return isAssignable;
+        }
+
+        public bool IsAssignableTo(UnitDefinition other)
+        {
+            return other.IsAssignableFrom(this);
         }
 
         public abstract void Stage1RoutineStubs();

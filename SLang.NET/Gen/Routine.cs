@@ -116,8 +116,7 @@ namespace SLang.NET.Gen
             {
                 var param = parameters[i];
                 var arg = arguments[i];
-                // TODO: types equality / IsAssignableFrom
-                if (!param.Type.Equals(arg.Type))
+                if (!param.Type.IsAssignableFrom(arg.Type))
                     throw new TypeMismatchException(param.Type, arg.Type);
             }
         }
@@ -220,14 +219,13 @@ namespace SLang.NET.Gen
             var expr = GenerateExpression(r.OptionalValue);
             var type = expr?.Type ?? Context.TypeSystem.Void;
 
-            // TODO: types equality / IsAssignableFrom
-            if (!SignatureDefinition.ReturnType.Equals(type))
+            if (!SignatureDefinition.ReturnType.IsAssignableFrom(type))
                 throw new TypeMismatchException(SignatureReference.ReturnType, type);
 
-            if (!SignatureDefinition.ReturnType.Equals(Context.TypeSystem.Void))
+            if (!SignatureDefinition.ReturnType.IsVoid)
             {
                 Debug.Assert(expr != null);
-                Debug.Assert(!type.Equals(Context.TypeSystem.Void));
+                Debug.Assert(!type.IsVoid);
 
                 expr.Load(ip);
             }
@@ -301,7 +299,7 @@ namespace SLang.NET.Gen
         private Variable GenerateVariableFromCall(Call call)
         {
             var routine = GenerateCall(call);
-            if (!routine.SignatureReference.ReturnType.Equals(Context.TypeSystem.Void))
+            if (!routine.SignatureReference.ReturnType.IsVoid)
             {
                 var variable = new Variable(routine.SignatureDefinition.ReturnType);
                 variable.Store(ip);
@@ -314,7 +312,7 @@ namespace SLang.NET.Gen
         private void GenerateStandaloneCall(Call call)
         {
             var routine = GenerateCall(call);
-            if (!routine.SignatureReference.ReturnType.Equals(Context.TypeSystem.Void))
+            if (!routine.SignatureReference.ReturnType.IsVoid)
             {
                 // drop result
                 // TODO: destructors?
