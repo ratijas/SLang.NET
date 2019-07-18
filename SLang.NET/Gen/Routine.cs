@@ -216,7 +216,7 @@ namespace SLang.NET.Gen
         private void GenerateReturn(Return r)
         {
             var expr = GenerateExpression(r.OptionalValue);
-            var type = expr?.Type ?? Context.TypeSystem.Void;
+            var type = expr.Type;
 
             if (!SignatureDefinition.ReturnType.IsAssignableFrom(type))
                 throw new TypeMismatchException(SignatureReference.ReturnType, type);
@@ -242,7 +242,7 @@ namespace SLang.NET.Gen
             switch (expression)
             {
                 case null:
-                    return null;
+                    return new Variable(Context.TypeSystem.Void);
 
                 case Literal literal:
                     var unit = Context.ResolveBuiltIn(new UnitReference(Context, literal.Type));
@@ -308,7 +308,7 @@ namespace SLang.NET.Gen
                 return variable;
             }
 
-            return null;
+            return new Variable(Context.TypeSystem.Void);
         }
 
         private void GenerateStandaloneCall(Call call)
