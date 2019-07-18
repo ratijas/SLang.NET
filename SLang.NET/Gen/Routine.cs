@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
@@ -203,7 +202,7 @@ namespace SLang.NET.Gen
                     case Call c:
                         GenerateStandaloneCall(c);
                         break;
-                    // TODO: replace with some polymorphism
+
                     case Return r:
                         GenerateReturn(r);
                         break;
@@ -244,12 +243,15 @@ namespace SLang.NET.Gen
             {
                 case null:
                     return null;
+
                 case Literal literal:
                     var unit = Context.ResolveBuiltIn(new UnitReference(Context, literal.Type));
-                    var result = new Variable(unit);
                     unit.LoadFromLiteral(literal.Value, ip);
+
+                    var result = new Variable(unit);
                     result.Store(ip);
                     return result;
+
                 case Call call:
                     return GenerateVariableFromCall(call);
 

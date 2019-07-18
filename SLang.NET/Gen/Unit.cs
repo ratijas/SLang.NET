@@ -91,8 +91,7 @@ namespace SLang.NET.Gen
 
         public bool IsAssignableFrom(UnitDefinition other)
         {
-            var isAssignable = Equals(other);
-            return isAssignable;
+            return Equals(other);
         }
 
         public bool IsAssignableTo(UnitDefinition other)
