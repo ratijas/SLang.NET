@@ -102,6 +102,25 @@ namespace SLang.NET.Gen
 
         public abstract void Stage1RoutineStubs();
         public abstract void Stage2RoutineBody();
+
+        public void VerifyCallArguments(IReadOnlyList<Variable> arguments)
+        {
+            var parameters = SignatureDefinition.Parameters;
+
+            // arity
+            if (parameters.Count != arguments.Count)
+                throw new ArityMismatchException(this, arguments.Count);
+
+            // types
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                var param = parameters[i];
+                var arg = arguments[i];
+                // TODO: types equality / IsAssignableFrom
+                if (!param.Type.Equals(arg.Type))
+                    throw new TypeMismatchException(param.Type, arg.NativeType);
+            }
+        }
     }
 
     public class NativeRoutineDefinition : RoutineDefinition
@@ -198,24 +217,19 @@ namespace SLang.NET.Gen
 
         private void GenerateReturn(Return r)
         {
-            var expr = r?.OptionalValue;
-            var exprVar = GenerateExpression(expr);
-            var exprVarType = exprVar?.VariableType ?? Context.TypeSystem.Void.NativeType;
-            
-            if (!SignatureDefinition.ReturnType.NativeType.FullName.Equals(exprVarType.FullName))
-                throw new TypeMismatchException(SignatureReference.ReturnType, exprVarType);
+            var expr = GenerateExpression(r.OptionalValue);
+            var type = expr?.Type ?? Context.TypeSystem.Void;
 
-            if (SignatureDefinition.ReturnType.Equals(Context.TypeSystem.Void))
-            {
-                // void method returning with void routine.  do nothing.
-            }
-            else
-            {
-                Debug.Assert(exprVar != null);
-                Debug.Assert(!exprVarType.FullName.Equals(Context.TypeSystem.Void.NativeType.FullName));
+            // TODO: types equality / IsAssignableFrom
+            if (!SignatureDefinition.ReturnType.Equals(type))
+                throw new TypeMismatchException(SignatureReference.ReturnType, type.NativeType);
 
-                ip.Body.Variables.Add(exprVar);
-                ip.Emit(OpCodes.Ldloc, exprVar);
+            if (!SignatureDefinition.ReturnType.Equals(Context.TypeSystem.Void))
+            {
+                Debug.Assert(expr != null);
+                Debug.Assert(!type.Equals(Context.TypeSystem.Void));
+
+                expr.Load(ip);
             }
 
             ip.Emit(OpCodes.Ret);
@@ -226,7 +240,7 @@ namespace SLang.NET.Gen
         /// </summary>
         /// <param name="expression"></param>
         /// <returns>Index </returns>
-        private VariableDefinition GenerateExpression(Expression expression)
+        private Variable GenerateExpression(Expression expression)
         {
             switch (expression)
             {
@@ -234,9 +248,9 @@ namespace SLang.NET.Gen
                     return null;
                 case Literal literal:
                     var unit = Context.ResolveBuiltIn(new UnitReference(Context, literal.Type));
-                    var result = new VariableDefinition(unit.NativeType);
+                    var result = new Variable(unit);
                     unit.LoadFromLiteral(literal.Value, ip);
-                    ip.Emit(OpCodes.Stloc, result);
+                    result.Store(ip);
                     return result;
                 case Call call:
                     return GenerateVariableFromCall(call);
@@ -263,20 +277,19 @@ namespace SLang.NET.Gen
             // arguments:
             {
                 // compile
-                var args = new List<VariableDefinition>(call.Arguments.Count);
+                var args = new List<Variable>(call.Arguments.Count);
                 foreach (var expression in call.Arguments)
                 {
                     args.Add(GenerateExpression(expression));
                 }
 
                 // verify
-                VerifyCallArguments(routine, args);
+                routine.VerifyCallArguments(args);
 
                 // add & load
                 foreach (var arg in args)
                 {
-                    ip.Body.Variables.Add(arg);
-                    ip.Emit(OpCodes.Ldloc, arg);
+                    arg.Load(ip);
                 }
             }
 
@@ -285,13 +298,13 @@ namespace SLang.NET.Gen
             return routine;
         }
 
-        private VariableDefinition GenerateVariableFromCall(Call call)
+        private Variable GenerateVariableFromCall(Call call)
         {
             var routine = GenerateCall(call);
             if (!routine.SignatureReference.ReturnType.Equals(Context.TypeSystem.Void))
             {
-                var variable = new VariableDefinition(routine.SignatureDefinition.ReturnType.NativeType);
-                ip.Emit(OpCodes.Stloc, variable);
+                var variable = new Variable(routine.SignatureDefinition.ReturnType);
+                variable.Store(ip);
                 return variable;
             }
 
@@ -306,27 +319,6 @@ namespace SLang.NET.Gen
                 // drop result
                 // TODO: destructors?
                 ip.Emit(OpCodes.Pop);
-            }
-        }
-
-        private static void VerifyCallArguments(RoutineDefinition routine,
-            List<VariableDefinition> arguments)
-        {
-            var signature = routine.SignatureDefinition;
-            var parameters = signature.Parameters;
-
-            // arity
-            if (parameters.Count != arguments.Count)
-                throw new ArityMismatchException(routine, arguments.Count);
-
-            // types
-            for (int i = 0; i < parameters.Count; i++)
-            {
-                var param = parameters[i];
-                var arg = arguments[i];
-                // TODO: types equality / IsAssignableFrom
-                if (!param.Type.NativeType.FullName.Equals(arg.VariableType.Resolve().FullName))
-                    throw new TypeMismatchException(param.Type, arg.VariableType);
             }
         }
 
