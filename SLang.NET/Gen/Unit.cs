@@ -7,7 +7,7 @@ using SLang.IR;
 
 namespace SLang.NET.Gen
 {
-    public class UnitReference
+    public partial class UnitReference
     {
         public Identifier Name { get; }
         public Context Context { get; }
@@ -89,14 +89,14 @@ namespace SLang.NET.Gen
             Routines.Add(routine);
         }
 
-        public bool IsAssignableFrom(UnitDefinition other)
+        public bool IsAssignableFrom(IHasType other)
         {
-            return Equals(other);
+            return Equals(other.GetType());
         }
 
-        public bool IsAssignableTo(UnitDefinition other)
+        public bool IsAssignableTo(IHasType other)
         {
-            return other.IsAssignableFrom(this);
+            return other.GetType().IsAssignableFrom(this);
         }
 
         public abstract void Stage1RoutineStubs();

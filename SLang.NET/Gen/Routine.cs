@@ -115,7 +115,7 @@ namespace SLang.NET.Gen
             {
                 var param = parameters[i];
                 var arg = arguments[i];
-                if (!param.Type.IsAssignableFrom(arg.Type))
+                if (!param.Type.IsAssignableFrom(arg))
                     throw new TypeMismatchException(param.Type, arg.Type);
             }
         }

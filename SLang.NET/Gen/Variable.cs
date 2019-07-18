@@ -10,7 +10,7 @@ namespace SLang.NET.Gen
     /// <para>
     /// In addition to Mono.Cecil VariableDefinition type, includes SLang UnitDefinition and optional name Identifier.
     /// </para>
-    public class Variable
+    public partial class Variable
     {
         public UnitDefinition Type { get; }
         public Identifier Name { get; }
