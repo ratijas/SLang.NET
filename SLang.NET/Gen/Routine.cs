@@ -118,7 +118,7 @@ namespace SLang.NET.Gen
                 var arg = arguments[i];
                 // TODO: types equality / IsAssignableFrom
                 if (!param.Type.Equals(arg.Type))
-                    throw new TypeMismatchException(param.Type, arg.NativeType);
+                    throw new TypeMismatchException(param.Type, arg.Type);
             }
         }
     }
@@ -222,7 +222,7 @@ namespace SLang.NET.Gen
 
             // TODO: types equality / IsAssignableFrom
             if (!SignatureDefinition.ReturnType.Equals(type))
-                throw new TypeMismatchException(SignatureReference.ReturnType, type.NativeType);
+                throw new TypeMismatchException(SignatureReference.ReturnType, type);
 
             if (!SignatureDefinition.ReturnType.Equals(Context.TypeSystem.Void))
             {

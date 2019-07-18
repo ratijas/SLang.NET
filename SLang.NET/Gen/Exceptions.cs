@@ -88,16 +88,15 @@ namespace SLang.NET.Gen
     {
         public UnitReference Expected { get; }
 
-        // TODO: change to UnitReference, once SLang-specific VariableDeclaration is implemented
-        public TypeReference Actual { get; }
+        public UnitReference Actual { get; }
 
-        public TypeMismatchException(UnitReference expected, TypeReference actual)
+        public TypeMismatchException(UnitReference expected, UnitReference actual)
         {
             Expected = expected;
             Actual = actual;
         }
 
         public override string Message =>
-            $"{nameof(TypeMismatchException)} (expected: {Expected}, actual: {Actual.FullName})";
+            $"{nameof(TypeMismatchException)} (expected: {Expected}, actual: {Actual})";
     }
 }
