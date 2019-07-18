@@ -255,10 +255,32 @@ namespace SLang.NET.Gen
                 case Call call:
                     return GenerateVariableFromCall(call);
 
+                case Reference reference:
+                    return GenerateLoadReference(reference);
+
                 // TODO: more expression classes
                 default:
                     throw new NotImplementedException("Some expressions are not implemented");
             }
+        }
+
+        private Variable GenerateLoadReference(Reference reference)
+        {
+            // TODO: Scope.Lookup(reference.Name);
+
+            var index = SignatureDefinition.Parameters.FindIndex(p => p.Name.Equals(reference.Name));
+            if (index != -1)
+            {
+                var param = SignatureDefinition.Parameters[index];
+
+                ip.Emit(OpCodes.Ldarg, index);
+
+                var variable = new Variable(param.Type);
+                variable.Store(ip);
+                return variable;
+            }
+
+            throw new UnresolvedReferenceException(reference);
         }
 
         /// <summary>
