@@ -2,7 +2,7 @@
   "stages": {
     "compiler": {
       "pass": false,
-      "error": "TypeMismatchException (expected: String, actual: System.Double)"
+      "error": "TypeMismatchException (expected: String, actual: Real)"
     }
   }
 }
