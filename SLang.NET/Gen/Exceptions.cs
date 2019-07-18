@@ -99,4 +99,17 @@ namespace SLang.NET.Gen
         public override string Message =>
             $"{nameof(TypeMismatchException)} (expected: {Expected}, actual: {Actual})";
     }
+
+    public class UnresolvedReferenceException : CompilerException
+    {
+        public Reference Reference { get; }
+
+        public UnresolvedReferenceException(Reference reference)
+        {
+            Reference = reference;
+        }
+
+        public override string Message =>
+            $"{nameof(UnresolvedReferenceException)}: {Reference.Name}";
+    }
 }

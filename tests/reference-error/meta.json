@@ -1,0 +1,8 @@
+{
+  "stages": {
+    "compiler": {
+      "pass": false,
+      "error": "UnresolvedReferenceException: your_girlfriend"
+    }
+  }
+}
