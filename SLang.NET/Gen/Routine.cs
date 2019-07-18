@@ -272,12 +272,7 @@ namespace SLang.NET.Gen
             if (index != -1)
             {
                 var param = SignatureDefinition.Parameters[index];
-
-                ip.Emit(OpCodes.Ldarg, index);
-
-                var variable = new Variable(param.Type);
-                variable.Store(ip);
-                return variable;
+                return new ArgumentVariable(param.Type, param.Name, index);
             }
 
             throw new UnresolvedReferenceException(reference);
