@@ -206,6 +206,9 @@ namespace SLang.NET.Gen
                     case Return r:
                         GenerateReturn(r);
                         break;
+                    
+                    default:
+                        throw new NotImplementedException("Entity type is not implemented: " + entity.GetType());
                 }
             }
 
