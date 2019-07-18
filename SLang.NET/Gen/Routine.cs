@@ -102,21 +102,21 @@ namespace SLang.NET.Gen
         public abstract void Stage1RoutineStubs();
         public abstract void Stage2RoutineBody();
 
-        public void VerifyCallArguments(IReadOnlyList<Variable> arguments)
+        public void VerifyCallArguments(IReadOnlyList<UnitDefinition> argumentTypes)
         {
             var parameters = SignatureDefinition.Parameters;
 
             // arity
-            if (parameters.Count != arguments.Count)
-                throw new ArityMismatchException(this, arguments.Count);
+            if (parameters.Count != argumentTypes.Count)
+                throw new ArityMismatchException(this, argumentTypes.Count);
 
             // types
             for (int i = 0; i < parameters.Count; i++)
             {
                 var param = parameters[i];
-                var arg = arguments[i];
+                var arg = argumentTypes[i];
                 if (!param.Type.IsAssignableFrom(arg))
-                    throw new TypeMismatchException(param.Type, arg.Type);
+                    throw new TypeMismatchException(param.Type, arg);
             }
         }
     }
@@ -213,47 +213,52 @@ namespace SLang.NET.Gen
             ip = null;
         }
 
-        private void GenerateReturn(Return r)
+        /// <summary>
+        /// Generate "RETURN" expression.
+        /// </summary>
+        /// <para>Stack behavior:</para>
+        /// <list type="number">
+        /// <item><description>stack should be empty</description></item>
+        /// <item><description>generate and load expression (if any)</description></item>
+        /// <item><description>emit <c>Ret</c> opcode</description></item>
+        /// </list>
+        /// <param name="ret">"RETURN" AST fragment</param>
+        /// <exception cref="TypeMismatchException">When actual returned type is not compatible with routine's signature</exception>
+        private void GenerateReturn(Return ret)
         {
-            var expr = GenerateExpression(r.OptionalValue);
-            var type = expr.Type;
+            var type = GenerateExpression(ret.OptionalValue);
 
             if (!SignatureDefinition.ReturnType.IsAssignableFrom(type))
                 throw new TypeMismatchException(SignatureReference.ReturnType, type);
-
-            if (!SignatureDefinition.ReturnType.IsVoid)
-            {
-                Debug.Assert(expr != null);
-                Debug.Assert(!type.IsVoid);
-
-                expr.Load(ip);
-            }
 
             ip.Emit(OpCodes.Ret);
         }
 
         /// <summary>
-        /// Generate code which evaluates expression and puts its result into new local variable definition.
+        /// Generate code which evaluates expression and stores its result into a local variable.
         /// </summary>
-        /// <param name="expression"></param>
-        /// <returns>Index </returns>
-        private Variable GenerateExpression(Expression expression)
+        /// <para>Stack behavior:</para>
+        /// <list type="number">
+        /// <item><description>recursively evaluate expression</description></item>
+        /// <item><description>leave result on the stack</description></item>
+        /// </list>
+        /// <param name="expression">"EXPRESSION" AST fragment</param>
+        /// <returns>Type of evaluated expression</returns>
+        private UnitDefinition GenerateExpression(Expression expression)
         {
             switch (expression)
             {
                 case null:
-                    return new Variable(Context.TypeSystem.Void);
+                    return Context.TypeSystem.Void;
 
                 case Literal literal:
                     var unit = Context.ResolveBuiltIn(new UnitReference(Context, literal.Type));
                     unit.LoadFromLiteral(literal.Value, ip);
-
-                    var result = new Variable(unit);
-                    result.Store(ip);
-                    return result;
+                    return unit;
 
                 case Call call:
-                    return GenerateVariableFromCall(call);
+                    var routine = GenerateCall(call);
+                    return routine.SignatureDefinition.ReturnType;
 
                 case Reference reference:
                     return GenerateLoadReference(reference);
@@ -264,31 +269,46 @@ namespace SLang.NET.Gen
             }
         }
 
-        private Variable GenerateLoadReference(Reference reference)
+        /// <summary>
+        /// Generate code to load a value pointed by a reference
+        /// </summary>
+        /// <para>Stack behavior:</para>
+        /// <list type="number">
+        /// <item><description>generate code to load a value by the reference</description></item>
+        /// <item><description>leave result on the stack</description></item>
+        /// </list>
+        /// <param name="reference">"REFERENCE" AST fragment</param>
+        /// <returns>Type of loaded value</returns>
+        /// <exception cref="UnresolvedReferenceException"></exception>
+        private UnitDefinition GenerateLoadReference(Reference reference)
         {
             // TODO: Scope.Lookup(reference.Name);
 
             var index = SignatureDefinition.Parameters.FindIndex(p => p.Name.Equals(reference.Name));
             if (index != -1)
             {
-                var param = SignatureDefinition.Parameters[index];
-
                 ip.Emit(OpCodes.Ldarg, index);
-
-                var variable = new Variable(param.Type);
-                variable.Store(ip);
-                return variable;
+                var param = SignatureDefinition.Parameters[index];
+                return param.Type;
             }
 
             throw new UnresolvedReferenceException(reference);
         }
 
         /// <summary>
-        /// Generates call to a routine, leaving returned value on the stack.
+        /// Generate call to a routine, leaving returned value on the stack.
         /// </summary>
-        /// <param name="call"></param>
+        /// <para>Stack behavior: </para>
+        /// <list type="number">
+        /// <item><description>evaluate each routine argument in order from 1 to N</description></item>
+        /// <item><description>arguments are on the stack one after another</description></item>
+        /// <item><description>call routine</description></item>
+        /// <item><description>leave returned value (if any) on the stack</description></item>
+        /// </list>
+        /// <para>Use returned routine definition to check whether the return type if void,
+        /// in order to determine if there is a value left on the stack.</para>
+        /// <param name="call">"CALL" AST fragment</param>
         /// <returns>Resolved routine definition</returns>
-        /// <exception cref="NotImplementedException"></exception>
         private RoutineDefinition GenerateCall(Call call)
         {
             if (call.Callee.Unit != null)
@@ -298,8 +318,8 @@ namespace SLang.NET.Gen
 
             // arguments:
             {
-                // compile
-                var args = new List<Variable>(call.Arguments.Count);
+                // compile & leave on the stack
+                var args = new List<UnitDefinition>(call.Arguments.Count);
                 foreach (var expression in call.Arguments)
                 {
                     args.Add(GenerateExpression(expression));
@@ -307,12 +327,6 @@ namespace SLang.NET.Gen
 
                 // verify
                 routine.VerifyCallArguments(args);
-
-                // add & load
-                foreach (var arg in args)
-                {
-                    arg.Load(ip);
-                }
             }
 
             ip.Emit(OpCodes.Call, routine.NativeMethod);
@@ -320,6 +334,17 @@ namespace SLang.NET.Gen
             return routine;
         }
 
+        /// <summary>
+        /// Generate call to a routine and store result into a variable.
+        /// </summary>
+        /// <para>Stack behavior: </para>
+        /// <list type="number">
+        /// <item><description>create new variable</description></item>
+        /// <item><description>store returned value</description></item>
+        /// <item><description>nothing left on the stack</description></item>
+        /// </list>
+        /// <param name="call">"CALL" AST fragment</param>
+        /// <returns>SLang variable which holds a value returned from a call.</returns>
         private Variable GenerateVariableFromCall(Call call)
         {
             var routine = GenerateCall(call);
@@ -333,6 +358,15 @@ namespace SLang.NET.Gen
             return new Variable(Context.TypeSystem.Void);
         }
 
+        /// <summary>
+        /// Generate call to a routine and drop result.
+        /// </summary>
+        /// <para>Stack behavior: </para>
+        /// <list type="number">
+        /// <item><description>pop returned value (if any)</description></item>
+        /// <item><description>nothing left on the stack</description></item>
+        /// </list>
+        /// <param name="call">"CALL" AST fragment</param>
         private void GenerateStandaloneCall(Call call)
         {
             var routine = GenerateCall(call);
@@ -344,6 +378,10 @@ namespace SLang.NET.Gen
             }
         }
 
+        /// <summary>
+        /// Fix absurd error of Mono.Cecil not initializing locals automatically when they do exist.
+        /// </summary>
+        /// https://stackoverflow.com/questions/56819716/net-methoddefinition-body-initlocals-false
         private void FixInitLocals()
         {
             if (NativeMethod.Body.Variables.Count > 0)

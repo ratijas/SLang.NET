@@ -1,3 +1,4 @@
+using System;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
@@ -38,7 +39,7 @@ namespace SLang.NET.Gen
         /// Store a value on the stack into variable and ensure that variable is added to method body's variables collection.
         /// </summary>
         /// <param name="ip">Method body's ILProcessor</param>
-        public void Store(ILProcessor ip)
+        public virtual void Store(ILProcessor ip)
         {
             ip.Emit(OpCodes.Stloc, NativeVariable);
             EnsureAdded(ip);
@@ -48,7 +49,7 @@ namespace SLang.NET.Gen
         /// Load the variable value onto the stack and ensure that variable is added to method body's variables collection.
         /// </summary>
         /// <param name="ip">Method body's ILProcessor</param>
-        public void Load(ILProcessor ip)
+        public virtual void Load(ILProcessor ip)
         {
             ip.Emit(OpCodes.Ldloc, NativeVariable);
             EnsureAdded(ip);
@@ -58,6 +59,34 @@ namespace SLang.NET.Gen
         {
             if (!ip.Body.Variables.Contains(NativeVariable))
                 ip.Body.Variables.Add(NativeVariable);
+        }
+    }
+
+    /// <summary>
+    /// Optimized class to use routine argument as a variable.
+    /// </summary>
+    public class ArgumentVariable : Variable
+    {
+        public int Index { get; }
+        public ArgumentVariable(UnitDefinition type, Identifier name, int index) : base(type, name)
+        {
+            if (index == -1)
+                throw new ArgumentNullException(nameof(index));
+            Index = index;
+        }
+
+        public ArgumentVariable(UnitDefinition type, int index) : this(type, Identifier.Empty, index)
+        {
+        }
+
+        public override void Store(ILProcessor ip)
+        {
+            ip.Emit(OpCodes.Starg, Index);
+        }
+
+        public override void Load(ILProcessor ip)
+        {
+            ip.Emit(OpCodes.Ldarg, Index);
         }
     }
 }
