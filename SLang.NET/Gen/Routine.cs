@@ -7,9 +7,9 @@ using SLang.IR;
 
 namespace SLang.NET.Gen
 {
-    public class RoutineReference
+    public partial class RoutineReference
     {
-        public Identifier Name { get; protected set; }
+        public Identifier Name { get; }
 
         /// <summary>
         /// Unit reference applies to routines declared within SLang Units.
@@ -18,7 +18,7 @@ namespace SLang.NET.Gen
         ///
         /// With that being said, UnitReference may be null, but after Resolve() UnitDefinition is always set.
         /// </summary>
-        public UnitReference Unit { get; protected set; }
+        public UnitReference Unit { get; }
 
         public Context Context { get; }
 
@@ -57,21 +57,6 @@ namespace SLang.NET.Gen
         public override string ToString()
         {
             return Unit == null ? $"::{Name}" : $"{Unit}::{Name}";
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is RoutineReference other)
-            {
-                return Unit.Equals(other.Unit) && Name.Equals(other.Name);
-            }
-
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return ToString().GetHashCode();
         }
     }
 

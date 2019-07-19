@@ -32,25 +32,10 @@ namespace SLang.NET.Gen
             return Name.ToString();
         }
 
-        public override bool Equals(object obj)
-        {
-            if (obj is UnitReference other)
-            {
-                return Name.Equals(other.Name);
-            }
-
-            return false;
-        }
-
         /// <summary>
         /// Shortcut for <c>Equals(Context.TypeSystem.Void)</c>.
         /// </summary>
         public bool IsVoid => Equals(Context.TypeSystem.Void);
-
-        public override int GetHashCode()
-        {
-            return Name.GetHashCode();
-        }
     }
 
     public abstract class UnitDefinition : UnitReference, IStagedCompilation
