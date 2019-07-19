@@ -242,42 +242,43 @@ namespace SLang.NET.Gen
             if (conditionals.IfThen.Count == 0)
                 throw new EmptyConditionalsException(conditionals);
 
+            var N = conditionals.IfThen.Count;
+            var brStubs = new Instruction[N];
             var hasElse = conditionals.Else != null;
-
-//            Instruction elseLabel = null;
             var afterLabel = ip.Create(OpCodes.Nop);
 
-//            var N = conditionals.IfThen.Count + (conditionals.Else == null ? 0 : 1);
-//            var brStubs = new Instruction[N];
-            
-            foreach (var (condition, body) in conditionals.IfThen)
+            for (var i = 0; i < N; i++)
             {
-                // if (condition)
+                var (condition, body) = conditionals.IfThen[i];
+
+                var brStub = ip.Create(OpCodes.Nop);
+                brStubs[i] = brStub;
+
+                if (i != 0)
+                {
+                    var here = ip.Create(OpCodes.Nop);
+                    ip.Append(here);
+                    ip.Replace(brStubs[i - 1], ip.Create(OpCodes.Brfalse, here));
+                }
+
                 var type = GenerateExpression(condition);
                 if (!type.IsAssignableTo(Context.TypeSystem.Integer))
                     throw new TypeMismatchException(Context.TypeSystem.Integer, type);
 
-                // elseif (condition)
-//                if (elseLabel != null)
-//                    ip.Append(elseLabel);
-                // if has more branches:
-//                elseLabel = ip.Create(OpCodes.Nop);
-                ip.Emit(OpCodes.Brfalse, afterLabel);
-                
-                // then [body]
+                ip.Append(brStub);
+
                 GenerateEntityList(body);
                 ip.Emit(OpCodes.Br, afterLabel);
             }
 
-//            if (hasElse)
-//            {
-//                ip.Append(elseLabel);
-//                GenerateEntityList(conditionals.Else);
-//                ip.Emit(OpCodes.Br, afterLabel);
-//
-//            }
-            
-//            ip.Append(elseLabel);
+            if (hasElse)
+            {
+                var here = ip.Create(OpCodes.Nop);
+                ip.Append(here);
+                ip.Replace(brStubs[N - 1], ip.Create(OpCodes.Brfalse, here));
+                GenerateEntityList(conditionals.Else);
+            }
+
             ip.Append(afterLabel);
         }
 

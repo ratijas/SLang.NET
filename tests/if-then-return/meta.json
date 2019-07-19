@@ -1,2 +1,7 @@
 {
+  "stages": {
+    "run": {
+      "exit_code": 42
+    }
+  }
 }

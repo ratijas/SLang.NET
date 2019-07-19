@@ -69,20 +69,21 @@
                 },
                 {
                   "type": "ENTITY_LIST",
-                  "children": []
-                }
-              ]
-            },
-            {
-              "type": "RETURN",
-              "children": [
-                {
-                  "type": "LITERAL",
-                  "value": "42",
                   "children": [
                     {
-                      "type": "UNIT_REF",
-                      "value": "Integer"
+                      "type": "RETURN",
+                      "children": [
+                        {
+                          "type": "LITERAL",
+                          "value": "42",
+                          "children": [
+                            {
+                              "type": "UNIT_REF",
+                              "value": "Integer"
+                            }
+                          ]
+                        }
+                      ]
                     }
                   ]
                 }
