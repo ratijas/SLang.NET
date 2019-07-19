@@ -1,5 +1,4 @@
 using System;
-using Mono.Cecil;
 using SLang.IR;
 
 namespace SLang.NET.Gen
@@ -71,7 +70,7 @@ namespace SLang.NET.Gen
     public class ArityMismatchException : CompilerException
     {
         public RoutineDefinition Routine;
-        public int Expected => Routine.SignatureReference.Parameters.Count;
+        public int Expected => Routine.SignatureReference.Parameters.Length;
         public int Actual { get; }
 
         public ArityMismatchException(RoutineDefinition routine, int actual)

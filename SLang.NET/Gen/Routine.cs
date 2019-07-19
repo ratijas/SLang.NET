@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
@@ -63,8 +62,8 @@ namespace SLang.NET.Gen
     public abstract class RoutineDefinition : RoutineReference, IStagedCompilation
     {
         public abstract bool IsNative { get; }
-        public ISignature<UnitReference> SignatureReference { get; protected set; }
-        public ISignature<UnitDefinition> SignatureDefinition { get; protected set; }
+        public SignatureReference SignatureReference { get; protected set; }
+        public SignatureDefinition SignatureDefinition { get; protected set; }
         public new UnitDefinition Unit { get; protected set; }
 
         /// <summary>
@@ -72,7 +71,7 @@ namespace SLang.NET.Gen
         /// </summary>
         public MethodDefinition NativeMethod { get; protected set; }
 
-        protected RoutineDefinition(UnitDefinition unit, Identifier name, ISignature<UnitReference> signature)
+        protected RoutineDefinition(UnitDefinition unit, Identifier name, SignatureReference signature)
             : base(unit, name)
         {
             Unit = unit;
@@ -92,11 +91,11 @@ namespace SLang.NET.Gen
             var parameters = SignatureDefinition.Parameters;
 
             // arity
-            if (parameters.Count != argumentTypes.Count)
+            if (parameters.Length != argumentTypes.Count)
                 throw new ArityMismatchException(this, argumentTypes.Count);
 
             // types
-            for (int i = 0; i < parameters.Count; i++)
+            for (int i = 0; i < parameters.Length; i++)
             {
                 var param = parameters[i];
                 var arg = argumentTypes[i];
@@ -115,7 +114,7 @@ namespace SLang.NET.Gen
         public NativeRoutineDefinition(
             UnitDefinition unit,
             Identifier name,
-            ISignature<UnitReference> signature,
+            SignatureReference signature,
             MethodReference nativeMethod
         )
             : base(unit, name, signature)
@@ -351,7 +350,8 @@ namespace SLang.NET.Gen
         {
             // TODO: Scope.Lookup(reference.Name);
 
-            var index = SignatureDefinition.Parameters.FindIndex(p => p.Name.Equals(reference.Name));
+            
+            var index = Array.FindIndex(SignatureDefinition.Parameters, p => p.Name.Equals(reference.Name));
             if (index != -1)
             {
                 ip.Emit(OpCodes.Ldarg, index);
