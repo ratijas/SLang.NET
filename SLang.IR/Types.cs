@@ -1,6 +1,7 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
+using SLang.IR.JSON;
 
 namespace SLang.IR
 {
@@ -21,7 +22,7 @@ namespace SLang.IR
     public sealed class Identifier : Entity
     {
         public string Value { get; }
-        
+
         public static Identifier Empty = new Identifier(string.Empty);
 
         public Identifier(string value)
@@ -353,6 +354,54 @@ namespace SLang.IR
         {
             Unit = unit;
             Routine = routine;
+        }
+    }
+
+    public class If : Entity
+    {
+        public List<(Expression Condition, List<Entity> Body)> IfThen { get; }
+
+        /// <summary>
+        /// Else branch may be null.
+        /// </summary>
+        public List<Entity> Else { get; }
+
+        public If(List<(Expression Condition, List<Entity> Body)> ifThen, List<Entity> @else = null)
+        {
+            if (ifThen.Count == 0)
+                throw new IrEntityException(this, "If/then list must have at least one pair");
+            IfThen = ifThen;
+            Else = @else;
+        }
+
+        internal If(StmtIfThenList list, EntityList @else = null)
+            : this(
+                list.Children.Select(ifThen => (ifThen.Condition, ifThen.Body)).ToList(),
+                @else?.Children)
+        {
+        }
+
+        internal class StmtIfThenList : Entity
+        {
+            public List<StmtIfThen> Children { get; } = new List<StmtIfThen>();
+
+            public StmtIfThenList(IEnumerable<StmtIfThen> children)
+            {
+                Children.AddRange(children);
+            }
+        }
+
+        internal class StmtIfThen : Entity
+        {
+            public Expression Condition { get; }
+
+            public List<Entity> Body { get; }
+
+            public StmtIfThen(Expression condition, List<Entity> body)
+            {
+                Condition = condition;
+                Body = body;
+            }
         }
     }
 }

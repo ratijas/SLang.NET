@@ -1,0 +1,98 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": []
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous"
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST"
+        },
+        {
+          "type": "UNIT_REF",
+          "value": "Integer"
+        },
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "IF",
+              "children": [
+                {
+                  "type": "STMT_IF_THEN_LIST",
+                  "children": [
+                    {
+                      "type": "STMT_IF_THEN",
+                      "children": [
+                        {
+                          "type": "LITERAL",
+                          "value": "0",
+                          "children": [
+                            {
+                              "type": "UNIT_REF",
+                              "value": "Integer"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "ENTITY_LIST",
+                          "children": [
+                            {
+                              "type": "RETURN",
+                              "children": [
+                                {
+                                  "type": "LITERAL",
+                                  "value": "37",
+                                  "children": [
+                                    {
+                                      "type": "UNIT_REF",
+                                      "value": "Integer"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "ENTITY_LIST",
+                  "children": [
+                    {
+                      "type": "RETURN",
+                      "children": [
+                        {
+                          "type": "LITERAL",
+                          "value": "42",
+                          "children": [
+                            {
+                              "type": "UNIT_REF",
+                              "value": "Integer"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}

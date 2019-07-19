@@ -112,4 +112,17 @@ namespace SLang.NET.Gen
         public override string Message =>
             $"{nameof(UnresolvedReferenceException)}: {Reference.Name}";
     }
+
+    public class EmptyConditionalsException : CompilerException
+    {
+        public If Conditionals { get; }
+
+        public EmptyConditionalsException(If conditionals)
+        {
+            Conditionals = conditionals;
+        }
+
+        public override string Message
+            => "Conditional statement must have at least one condition/action pair";
+    }
 }
