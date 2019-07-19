@@ -195,7 +195,20 @@ namespace SLang.NET.Gen
 
             ip = NativeMethod.Body.GetILProcessor();
 
-            foreach (var entity in AST.Body)
+            GenerateEntityList(AST.Body);
+
+            FixInitLocals();
+            ip = null;
+        }
+
+        /// <summary>
+        /// Generate block of entities, like routine body or if-then-else branches.
+        /// </summary>
+        /// <para>Stack behavior: entirely defined by entities in question.</para>
+        /// <param name="entities">"ENTITY_LIST" AST fragment</param>
+        private void GenerateEntityList(List<Entity> entities)
+        {
+            foreach (var entity in entities)
             {
                 switch (entity)
                 {
@@ -206,15 +219,84 @@ namespace SLang.NET.Gen
                     case Return r:
                         GenerateReturn(r);
                         break;
+
+                    case If conditionals:
+                        GenerateConditionalStatements(conditionals);
+                        break;
+
+                    default:
+                        throw new NotImplementedException("Entity type is not implemented: " + entity.GetType());
                 }
             }
-
-            FixInitLocals();
-            ip = null;
         }
 
         /// <summary>
-        /// Generate "RETURN" expression.
+        /// Generate "IF" statement with all "than", "elseif" and "else" branches.
+        /// </summary>
+        /// <para>Stack behavior: entirely defined by then/else branches.</para>
+        /// <param name="conditionals">"IF" and "STMT_IF_THEN_LIST" with "STMT_IF_THEN" AST fragments</param>
+        /// <exception cref="EmptyConditionalsException">"If" has no actual "if"/"then" pair</exception>
+        /// <exception cref="TypeMismatchException">When type of condition is not an Integer unit type.</exception>
+        private void GenerateConditionalStatements(If conditionals)
+        {
+            if (conditionals.IfThen.Count == 0)
+                throw new EmptyConditionalsException(conditionals);
+
+            var N = conditionals.IfThen.Count;
+            var brStubs = new Instruction[N];
+            var hasElse = conditionals.Else != null;
+            var afterLabel = ip.Create(OpCodes.Nop);
+
+            for (var i = 0; i < N; i++)
+            {
+                var (condition, body) = conditionals.IfThen[i];
+
+                var brStub = ip.Create(OpCodes.Nop);
+                brStubs[i] = brStub;
+
+                if (i != 0)
+                {
+                    var here = ip.Create(OpCodes.Nop);
+                    ip.Append(here);
+                    ip.Replace(brStubs[i - 1], ip.Create(OpCodes.Brfalse, here));
+                }
+
+                var type = GenerateExpression(condition);
+                if (!type.IsAssignableTo(Context.TypeSystem.Integer))
+                    throw new TypeMismatchException(Context.TypeSystem.Integer, type);
+
+                ip.Append(brStub);
+
+                GenerateEntityList(body);
+                ip.Emit(OpCodes.Br, afterLabel);
+            }
+
+            if (hasElse)
+            {
+                var here = ip.Create(OpCodes.Nop);
+                ip.Append(here);
+                ip.Replace(brStubs[N - 1], ip.Create(OpCodes.Brfalse, here));
+                GenerateEntityList(conditionals.Else);
+            }
+
+            ip.Append(afterLabel);
+        }
+
+        public static int Test(int i)
+        {
+            while (i != 4)
+            {
+                if (i != 0)
+                    return 37;
+                else
+                    return 42;
+            }
+
+            return 99;
+        }
+
+        /// <summary>
+        /// Generate "RETURN" statement.
         /// </summary>
         /// <para>Stack behavior:</para>
         /// <list type="number">

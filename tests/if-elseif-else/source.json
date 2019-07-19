@@ -1,0 +1,231 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": [
+        {
+          "type": "ROUTINE",
+          "children": [
+            {
+              "type": "IDENTIFIER",
+              "value": "routine_multi_if_else"
+            },
+            null,
+            {
+              "type": "PARAMETER_LIST",
+              "children": [
+                {
+                  "type": "PARAMETER",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "Integer"
+                    },
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "x"
+                    }
+                  ]
+                },
+                {
+                  "type": "PARAMETER",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "Integer"
+                    },
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "y"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "UNIT_REF",
+              "value": "Integer"
+            },
+            null,
+            {
+              "type": "ENTITY_LIST",
+              "children": [
+                {
+                  "type": "IF",
+                  "children": [
+                    {
+                      "type": "STMT_IF_THEN_LIST",
+                      "children": [
+                        {
+                          "type": "STMT_IF_THEN",
+                          "children": [
+                            {
+                              "type": "REFERENCE",
+                              "children": [
+                                {
+                                  "type": "IDENTIFIER",
+                                  "value": "x"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "ENTITY_LIST",
+                              "children": [
+                                {
+                                  "type": "RETURN",
+                                  "children": [
+                                    {
+                                      "type": "LITERAL",
+                                      "value": "37",
+                                      "children": [
+                                        {
+                                          "type": "UNIT_REF",
+                                          "value": "Integer"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "STMT_IF_THEN",
+                          "children": [
+                            {
+                              "type": "REFERENCE",
+                              "children": [
+                                {
+                                  "type": "IDENTIFIER",
+                                  "value": "y"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "ENTITY_LIST",
+                              "children": [
+                                {
+                                  "type": "RETURN",
+                                  "children": [
+                                    {
+                                      "type": "LITERAL",
+                                      "value": "42",
+                                      "children": [
+                                        {
+                                          "type": "UNIT_REF",
+                                          "value": "Integer"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ENTITY_LIST",
+                      "children": [
+                        {
+                          "type": "RETURN",
+                          "children": [
+                            {
+                              "type": "LITERAL",
+                              "value": "90",
+                              "children": [
+                                {
+                                  "type": "UNIT_REF",
+                                  "value": "Integer"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            null
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous"
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST",
+          "children": []
+        },
+        {
+          "type": "UNIT_REF",
+          "value": "Integer"
+        },
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "RETURN",
+              "children": [
+                {
+                  "type": "CALL",
+                  "children": [
+                    {
+                      "type": "CALLEE",
+                      "children": [
+                        null,
+                        {
+                          "type": "IDENTIFIER",
+                          "value": "routine_multi_if_else"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "EXPRESSION_LIST",
+                      "value": null,
+                      "children": [
+                        {
+                          "type": "LITERAL",
+                          "value": "0",
+                          "children": [
+                            {
+                              "type": "UNIT_REF",
+                              "value": "Integer"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "LITERAL",
+                          "value": "5",
+                          "children": [
+                            {
+                              "type": "UNIT_REF",
+                              "value": "Integer"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}

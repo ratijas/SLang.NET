@@ -53,7 +53,10 @@ namespace SLang.IR.JSON
             VARIABLE = "VARIABLE",
             UNIT = "UNIT",
             REF_VAL_SPEC = "REF_VAL_SPEC",
-            CONCURRENT_SPEC = "CONCURRENT_SPEC";
+            CONCURRENT_SPEC = "CONCURRENT_SPEC",
+            IF = "IF",
+            STMT_IF_THEN_LIST = "STMT_IF_THEN_LIST",
+            STMT_IF_THEN = "STMT_IF_THEN";
 
         public Parser()
         {
@@ -80,6 +83,9 @@ namespace SLang.IR.JSON
                 {UNIT, ParseUnit},
                 {REF_VAL_SPEC, ParseRefValSpec},
                 {CONCURRENT_SPEC, ParseConcurrentSpec},
+                {IF, ParseIf},
+                {STMT_IF_THEN_LIST, ParseStmtIfThenList},
+                {STMT_IF_THEN, ParseStmtIfThen},
             };
         }
 
@@ -367,6 +373,40 @@ namespace SLang.IR.JSON
                 default:
                     throw new JsonFormatException(o, $"{CONCURRENT_SPEC} must be either \"concurrent\" or null");
             }
+        }
+
+        private If ParseIf(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, IF);
+            EntityMixin.ValueMustBeNull(o);
+
+            return Guard(o, children =>
+            {
+                var pairs = children.OfType<If.StmtIfThenList>().Single();
+                var @else = children.OfType<EntityList>().SingleOrDefault();
+                return new If(pairs, @else);
+            });
+        }
+
+        private If.StmtIfThenList ParseStmtIfThenList(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, STMT_IF_THEN_LIST);
+            EntityMixin.ValueMustBeNull(o);
+            
+            return new If.StmtIfThenList(ParseChildren(o).OfType<If.StmtIfThen>().ToList());
+        }
+
+        private If.StmtIfThen ParseStmtIfThen(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, STMT_IF_THEN);
+            EntityMixin.ValueMustBeNull(o);
+
+            return Guard(o, children =>
+            {
+                var condition = children.OfType<Expression>().Single();
+                var body = children.OfType<EntityList>().Single().Children;
+                return new If.StmtIfThen(condition, body);
+            });
         }
 
         /// <summary>
