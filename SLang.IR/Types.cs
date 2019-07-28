@@ -92,18 +92,18 @@ namespace SLang.IR
             bool isForeign,
             IEnumerable<Parameter> parameters,
             UnitRef returnType,
-            PreCondition preCondition,
             IEnumerable<Entity> body,
-            PostCondition postCondition
+            PreCondition preCondition = null,
+            PostCondition postCondition = null
         )
             : base(name)
         {
             IsForeign = isForeign;
             Parameters.AddRange(parameters);
             ReturnType = returnType;
-            PreCondition = preCondition;
             Body.AddRange(body);
-            PostCondition = postCondition;
+            PreCondition = preCondition ?? new PreCondition();
+            PostCondition = postCondition ?? new PostCondition();
         }
 
         internal class ParameterList : Entity

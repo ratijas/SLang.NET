@@ -161,8 +161,8 @@ namespace SLang.IR.JSON
                     isForeign: isForeign,
                     parameters: parameters,
                     returnType: returnType,
-                    preCondition: pre,
                     body: body,
+                    preCondition: pre,
                     postCondition: post);
             });
         }
