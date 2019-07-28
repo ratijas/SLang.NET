@@ -266,19 +266,6 @@ namespace SLang.NET.Gen
             ip.Append(afterLabel);
         }
 
-        public static int Test(int i)
-        {
-            while (i != 4)
-            {
-                if (i != 0)
-                    return 37;
-                else
-                    return 42;
-            }
-
-            return 99;
-        }
-
         /// <summary>
         /// Generate "RETURN" statement.
         /// </summary>
