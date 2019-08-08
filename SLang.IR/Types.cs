@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -27,7 +28,7 @@ namespace SLang.IR
 
         public Identifier(string value)
         {
-            Value = value;
+            Value = string.Intern(value);
         }
 
         public override bool Equals(object obj)
