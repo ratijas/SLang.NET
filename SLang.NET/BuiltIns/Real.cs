@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using Mono.Cecil.Cil;
 using SLang.IR;
@@ -14,6 +13,8 @@ namespace SLang.NET.BuiltIns
             : base(ctx, UnitName, ctx.NativeModule.TypeSystem.Double)
         {
         }
+
+        public override bool CanLoadFromLiteral => true;
 
         public override void LoadFromLiteral(string literal, ILProcessor ip)
         {

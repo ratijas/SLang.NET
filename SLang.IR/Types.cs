@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -27,7 +28,7 @@ namespace SLang.IR
 
         public Identifier(string value)
         {
-            Value = value;
+            Value = string.Intern(value);
         }
 
         public override bool Equals(object obj)
@@ -92,18 +93,18 @@ namespace SLang.IR
             bool isForeign,
             IEnumerable<Parameter> parameters,
             UnitRef returnType,
-            PreCondition preCondition,
             IEnumerable<Entity> body,
-            PostCondition postCondition
+            PreCondition preCondition = null,
+            PostCondition postCondition = null
         )
             : base(name)
         {
             IsForeign = isForeign;
             Parameters.AddRange(parameters);
             ReturnType = returnType;
-            PreCondition = preCondition;
             Body.AddRange(body);
-            PostCondition = postCondition;
+            PreCondition = preCondition ?? new PreCondition();
+            PostCondition = postCondition ?? new PostCondition();
         }
 
         internal class ParameterList : Entity
@@ -221,7 +222,7 @@ namespace SLang.IR
 
     public class UnitRef : Entity
     {
-        public static UnitRef Void { get; } = new UnitRef(new Identifier("$void"));
+        public static UnitRef Void { get; } = new UnitRef(new Identifier(typeof(void).Name));
 
         public Identifier Name { get; }
 
