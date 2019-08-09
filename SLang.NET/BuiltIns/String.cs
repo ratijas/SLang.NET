@@ -13,6 +13,8 @@ namespace SLang.NET.BuiltIns
         {
         }
 
+        public override bool CanLoadFromLiteral => true;
+
         public override void LoadFromLiteral(string literal, ILProcessor ip)
         {
             ip.Emit(OpCodes.Ldstr, literal);

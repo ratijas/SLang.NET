@@ -1,7 +1,6 @@
 using System;
-using SLang.IR;
 using Mono.Cecil;
-
+using SLang.IR;
 
 namespace SLang.NET.Gen
 {
@@ -14,26 +13,26 @@ namespace SLang.NET.Gen
 
             var context = new Context(asm.MainModule);
 
-            var globalAnonymousUnit =
-                context.GlobalUnit = new SLangUnitDefinition(context, new Identifier("$GlobalUnit"));
+            var globalUnit =
+                context.GlobalUnit =
+                    context.RegisterUnit(new SLangUnitDefinition(context, new Identifier("$GlobalUnit")));
 
-            var globalAnonymousRoutine = new SLangRoutineDefinition(globalAnonymousUnit, root.Anonymous);
+            var globalAnonymousRoutine =
+                globalUnit.RegisterRoutine(
+                    new SLangRoutineDefinition(globalUnit, root.Anonymous)
+                        {IsUnboxedReturnType = true});
 
             foreach (var declaration in root.Declarations)
             {
                 switch (declaration)
                 {
                     case RoutineDeclaration routine:
-                    {
-                        var _ = new SLangRoutineDefinition(globalAnonymousUnit, routine);
+                        globalUnit.RegisterRoutine(new SLangRoutineDefinition(globalUnit, routine));
                         break;
-                    }
 
                     case UnitDeclaration unit:
-                    {
-                        var _ = new SLangUnitDefinition(context, unit);
+                        context.RegisterUnit(new SLangUnitDefinition(context, unit));
                         break;
-                    }
 
                     default:
                         throw new NotImplementedException("only routine declarations are supported");

@@ -1,5 +1,4 @@
 using System;
-using Mono.Cecil;
 using SLang.IR;
 
 namespace SLang.NET.Gen
@@ -22,6 +21,21 @@ namespace SLang.NET.Gen
 
         public override string Message =>
             $@"Unable to parse ""{Unit}"" literal ""{Literal}""";
+    }
+
+    public class LiteralsNotSupported : CompilerException
+    {
+        public UnitReference Unit { get; }
+        public string Literal { get; }
+
+        public LiteralsNotSupported(UnitReference unit, string literal)
+        {
+            Unit = unit;
+            Literal = literal;
+        }
+
+        public override string Message =>
+            $@"Literals are not supported for unit ""{Unit}"": ""{Literal}""";
     }
 
     public class UnitNotFoundException : CompilerException
@@ -71,7 +85,7 @@ namespace SLang.NET.Gen
     public class ArityMismatchException : CompilerException
     {
         public RoutineDefinition Routine;
-        public int Expected => Routine.SignatureReference.Parameters.Count;
+        public int Expected => Routine.SignatureReference.Parameters.Length;
         public int Actual { get; }
 
         public ArityMismatchException(RoutineDefinition routine, int actual)

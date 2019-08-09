@@ -55,6 +55,16 @@ namespace SLang.NET.Gen
             EnsureAdded(ip);
         }
 
+        /// <summary>
+        /// Load the <i>address</i> of the variable onto the stack and ensure that variable is added to method body's variables collection. 
+        /// </summary>
+        /// <param name="ip">Method body's ILProcessor</param>
+        public virtual void LoadA(ILProcessor ip)
+        {
+            ip.Emit(OpCodes.Ldloca, NativeVariable);
+            EnsureAdded(ip);
+        }
+
         private void EnsureAdded(ILProcessor ip)
         {
             if (!ip.Body.Variables.Contains(NativeVariable))
@@ -68,6 +78,7 @@ namespace SLang.NET.Gen
     public class ArgumentVariable : Variable
     {
         public int Index { get; }
+
         public ArgumentVariable(UnitDefinition type, Identifier name, int index) : base(type, name)
         {
             if (index == -1)
@@ -87,6 +98,11 @@ namespace SLang.NET.Gen
         public override void Load(ILProcessor ip)
         {
             ip.Emit(OpCodes.Ldarg, Index);
+        }
+        
+        public override void LoadA(ILProcessor ip)
+        {
+            ip.Emit(OpCodes.Ldarga, Index);
         }
     }
 }

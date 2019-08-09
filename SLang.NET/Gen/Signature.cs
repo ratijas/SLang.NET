@@ -4,21 +4,63 @@ using SLang.IR;
 
 namespace SLang.NET.Gen
 {
-    public interface ISignature<T>
+    public abstract partial class Signature<T> where T : UnitReference
     {
-        T ReturnType { get; set; }
+        public T ReturnType { get; }
+
+        public Parameter<T>[] Parameters { get; } = new Parameter<T>[0];
+
 
         /// <summary>
-        /// Parameters may have name, or it can be an empty string.
+        /// No parameters, empty return type.
         /// </summary>
-        List<Parameter<T>> Parameters { get; }
+        /// <param name="ctx"></param>
+        protected Signature(Context ctx) : this(ctx.TypeSystem.Void as T)
+        {
+        }
 
-        ISignature<UnitDefinition> Resolve();
+        /// <summary>
+        /// No parameters, only the return type.
+        /// </summary>
+        /// <param name="returnType"></param>
+        protected Signature(T returnType)
+        {
+            ReturnType = returnType;
+        }
+
+        /// <summary>
+        /// With unnamed parameters and the return type.
+        /// </summary>
+        /// <param name="returnType"></param>
+        /// <param name="parameters"></param>
+        protected Signature(T returnType, IEnumerable<T> parameters)
+        {
+            ReturnType = returnType;
+            Parameters = parameters.Select(p => new Parameter<T>(p)).ToArray();
+        }
+
+        /// <summary>
+        /// With named parameters and the return type.
+        /// </summary>
+        /// <param name="returnType"></param>
+        /// <param name="parameters"></param>
+        protected Signature(T returnType, IEnumerable<Parameter<T>> parameters)
+        {
+            ReturnType = returnType;
+            Parameters = parameters.ToArray();
+        }
+
+
+        public abstract SignatureDefinition Resolve();
     }
 
     public partial struct Parameter<T>
     {
+        /// <summary>
+        /// Parameters may have name, or it can be an empty identifier.
+        /// </summary>
         public Identifier Name;
+
         public T Type;
 
         public Parameter(Identifier name, T type)
@@ -32,45 +74,49 @@ namespace SLang.NET.Gen
         }
     }
 
-    public class SignatureReference : ISignature<UnitReference>
+    /// <summary>
+    /// Not yet resolved signature, operates on <see cref="UnitReference"/>s.
+    /// Resolves to <see cref="SignatureDefinition"/>.
+    /// </summary>
+    public class SignatureReference : Signature<UnitReference>
     {
-        public UnitReference ReturnType { get; set; }
-
-        public List<Parameter<UnitReference>> Parameters { get; } =
-            new List<Parameter<UnitReference>>();
-
-        public SignatureReference(Context ctx) : this(ctx.TypeSystem.Void)
+        public SignatureReference(Context ctx) : base(ctx)
         {
         }
 
-        public SignatureReference(UnitReference returnType)
+        public SignatureReference(UnitReference returnType) : base(returnType)
         {
-            ReturnType = returnType;
         }
 
         public SignatureReference(UnitReference returnType, IEnumerable<UnitReference> parameters)
+            : base(returnType, parameters)
         {
-            ReturnType = returnType;
-            Parameters.AddRange(parameters.Select(p => new Parameter<UnitReference>(p)));
         }
 
-        public SignatureReference(
-            UnitReference returnType,
-            IEnumerable<Parameter<UnitReference>> parameters
-        )
+        public SignatureReference(UnitReference returnType, IEnumerable<Parameter<UnitReference>> parameters)
+            : base(returnType, parameters)
         {
-            ReturnType = returnType;
-            Parameters.AddRange(parameters);
         }
 
+        /// <summary>
+        /// From JSON IR routine declaration.
+        /// </summary>
+        /// <para>Extracts named parameters and the return type.</para>
+        /// <param name="ctx"></param>
+        /// <param name="routine"></param>
         public SignatureReference(Context ctx, RoutineDeclaration routine)
+            : base(
+                new UnitReference(ctx, routine.ReturnType),
+                routine
+                    .Parameters
+                    .Select(param =>
+                        new Parameter<UnitReference>(
+                            param.Name,
+                            new UnitReference(ctx, param.Type))))
         {
-            ReturnType = new UnitReference(ctx, routine.ReturnType);
-            Parameters.AddRange(routine.Parameters.Select(param =>
-                new Parameter<UnitReference>(param.Name, new UnitReference(ctx, param.Type))));
         }
 
-        public ISignature<UnitDefinition> Resolve()
+        public override SignatureDefinition Resolve()
         {
             return new SignatureDefinition(
                 ReturnType.Resolve(),
@@ -78,32 +124,31 @@ namespace SLang.NET.Gen
         }
     }
 
-    public class SignatureDefinition : ISignature<UnitDefinition>
+    /// <summary>
+    /// Resolved signature, operates on <see cref="UnitDefinition"/>s.
+    /// Resolves to itself.
+    /// </summary>
+    public class SignatureDefinition : Signature<UnitDefinition>
     {
-        public UnitDefinition ReturnType { get; set; }
-
-        public List<Parameter<UnitDefinition>> Parameters { get; }
-            = new List<Parameter<UnitDefinition>>();
-
-        public SignatureDefinition(Context ctx) : this(ctx.TypeSystem.Void)
+        public SignatureDefinition(Context ctx) : base(ctx)
         {
         }
 
-        public SignatureDefinition(UnitDefinition returnType)
+        public SignatureDefinition(UnitDefinition returnType) : base(returnType)
         {
-            ReturnType = returnType;
         }
 
-        public SignatureDefinition(
-            UnitDefinition returnType,
-            IEnumerable<Parameter<UnitDefinition>> parameters
-        )
-            : this(returnType)
+        public SignatureDefinition(UnitDefinition returnType, IEnumerable<UnitDefinition> parameters)
+            : base(returnType, parameters)
         {
-            Parameters.AddRange(parameters);
         }
 
-        public ISignature<UnitDefinition> Resolve()
+        public SignatureDefinition(UnitDefinition returnType, IEnumerable<Parameter<UnitDefinition>> parameters)
+            : base(returnType, parameters)
+        {
+        }
+
+        public override SignatureDefinition Resolve()
         {
             return this;
         }
