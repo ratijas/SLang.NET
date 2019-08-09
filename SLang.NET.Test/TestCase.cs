@@ -96,18 +96,23 @@ namespace SLang.NET.Test
 
                 report.ParserPass = meta.Pass;
                 if (!meta.Pass)
-                    report.ParserError = "Shouldn't have passed.";
+                {
+                    report.ParserErrorShort = "Shouldn't have passed.";
+                    report.ParserErrorFull = string.Empty;
+                }
 
                 return root;
             }
             catch (FormatException e)
             {
                 var error = e.Message;
+                var errorFull = e.ToString();
 
                 if (meta.Pass)
                 {
                     report.ParserPass = false;
-                    report.ParserError = error;
+                    report.ParserErrorShort = error;
+                    report.ParserErrorFull = errorFull;
                 }
                 else if (!meta.Pass)
                 {
@@ -118,7 +123,8 @@ namespace SLang.NET.Test
                     else
                     {
                         report.ParserPass = false;
-                        report.ParserError = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
+                        report.ParserErrorShort = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
+                        report.ParserErrorFull = errorFull;
                     }
                 }
 
@@ -146,16 +152,21 @@ namespace SLang.NET.Test
 
                 report.CompilerPass = meta.Pass;
                 if (!meta.Pass)
-                    report.CompilerError = "Shouldn't have compiled";
+                {
+                    report.CompilerErrorShort = "Shouldn't have compiled";
+                    report.CompilerErrorFull = string.Empty;
+                }
             }
             catch (Exception e)
             {
                 var error = e.Message;
+                var errorFull = e.ToString();
 
                 if (meta.Pass)
                 {
                     report.CompilerPass = false;
-                    report.CompilerError = error;
+                    report.CompilerErrorShort = error;
+                    report.CompilerErrorFull = errorFull;
                 }
                 else if (!meta.Pass)
                 {
@@ -166,7 +177,8 @@ namespace SLang.NET.Test
                     else
                     {
                         report.CompilerPass = false;
-                        report.CompilerError = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
+                        report.CompilerErrorShort = $@"Error mismatch (expected: {meta.Error.Pattern}, actual: ""{error}"")";
+                        report.CompilerErrorFull = errorFull;
                     }
                 }
             }

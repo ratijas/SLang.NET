@@ -51,9 +51,13 @@ namespace SLang.NET.Test
         private void PrintDetails(Report report)
         {
             var stage = report.GetStage();
-            var error = report.GetError();
+            var error = report.GetErrorShort();
+            var full = report.GetErrorFull();
+            
             Tab(); Out.WriteLine($"Stage: {stage}");
             Tab(); Out.WriteLine($"Error: {error}");
+            if (!string.IsNullOrEmpty(full))
+                Out.WriteLine(full);
         }
 
         private void PrintSummary()

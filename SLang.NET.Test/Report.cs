@@ -18,16 +18,20 @@ namespace SLang.NET.Test
         public Status Status = Status.Invalid;
 
         public bool ParserPass = true;
-        public string ParserError = string.Empty;
+        public string ParserErrorShort = string.Empty;
+        public string ParserErrorFull = string.Empty;
 
         public bool CompilerPass = true;
-        public string CompilerError = string.Empty;
+        public string CompilerErrorShort = string.Empty;
+        public string CompilerErrorFull = string.Empty;
 
         public bool PeVerifyPass = true;
         public string PeVerifyError = string.Empty;
+        // no such thing as PeVerifyError{Short,Full}
 
         public bool RunPass = true;
         public string RunError = string.Empty;
+        // no such thing as RunError{Short,Full}
 
         public Task Complete = Task.CompletedTask;
 
@@ -50,16 +54,30 @@ namespace SLang.NET.Test
             return "Unknown";
         }
 
-        public string GetError()
+        public string GetErrorShort()
         {
             if (!ParserPass)
-                return ParserError;
+                return ParserErrorShort;
             else if (!CompilerPass)
-                return CompilerError;
+                return CompilerErrorShort;
             else if (!PeVerifyPass)
                 return PeVerifyError;
             else if (!RunPass)
                 return RunError;
+
+            return "Unknown";
+        }
+
+        public string GetErrorFull()
+        {
+            if (!ParserPass)
+                return ParserErrorFull;
+            else if (!CompilerPass)
+                return CompilerErrorFull;
+            else if (!PeVerifyPass)
+                return string.Empty;
+            else if (!RunPass)
+                return string.Empty;
 
             return "Unknown";
         }
