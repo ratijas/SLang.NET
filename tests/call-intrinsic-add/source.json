@@ -1,0 +1,81 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": []
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous"
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST"
+        },
+        {
+          "type": "UNIT_REF",
+          "value": "Integer"
+        },
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "RETURN",
+              "children": [
+                {
+                  "type": "CALL",
+                  "children": [
+                    {
+                      "type": "CALLEE",
+                      "children": [
+                        {
+                          "type": "IDENTIFIER",
+                          "value": "Integer"
+                        },
+                        {
+                          "type": "IDENTIFIER",
+                          "value": "operator+(Integer,Integer)"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "EXPRESSION_LIST",
+                      "children": [
+                        {
+                          "type": "LITERAL",
+                          "value": "40",
+                          "children": [
+                            {
+                              "type": "UNIT_REF",
+                              "value": "Integer"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "LITERAL",
+                          "value": "2",
+                          "children": [
+                            {
+                              "type": "UNIT_REF",
+                              "value": "Integer"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}

@@ -23,6 +23,21 @@ namespace SLang.NET.Gen
             $@"Unable to parse ""{Unit}"" literal ""{Literal}""";
     }
 
+    public class LiteralsNotSupported : CompilerException
+    {
+        public UnitReference Unit { get; }
+        public string Literal { get; }
+
+        public LiteralsNotSupported(UnitReference unit, string literal)
+        {
+            Unit = unit;
+            Literal = literal;
+        }
+
+        public override string Message =>
+            $@"Literals are not supported for unit ""{Unit}"": ""{Literal}""";
+    }
+
     public class UnitNotFoundException : CompilerException
     {
         public Context Context { get; }

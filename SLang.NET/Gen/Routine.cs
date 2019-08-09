@@ -25,7 +25,7 @@ namespace SLang.NET.Gen
         /// Global routines are always static. Routines declared within units must be marked as static explicitly.
         /// Default value `true` is provided as a temporary measure until IR supports such modifier.
         /// </summary>
-        public bool IsStatic { get; set; } = true;
+        public bool IsStatic { get; } = true;
 
         public RoutineReference(UnitReference unitReference, Identifier name)
         {
@@ -67,7 +67,7 @@ namespace SLang.NET.Gen
         public new UnitDefinition Unit { get; protected set; }
 
         /// <summary>
-        /// Underlying native method. This property is null until Compile() is called.
+        /// Underlying native method. This property is null until Stage1RoutineStubs() is completed.
         /// </summary>
         public MethodDefinition NativeMethod { get; protected set; }
 
@@ -83,7 +83,10 @@ namespace SLang.NET.Gen
             return this;
         }
 
-        public abstract void Stage1RoutineStubs();
+        public virtual void Stage1RoutineStubs()
+        {
+            SignatureDefinition = SignatureReference.Resolve();
+        }
         public abstract void Stage2RoutineBody();
 
         public void VerifyCallArguments(IReadOnlyList<UnitDefinition> argumentTypes)
@@ -109,22 +112,15 @@ namespace SLang.NET.Gen
     {
         public sealed override bool IsNative => true;
 
-        private MethodReference methodReference;
-
         public NativeRoutineDefinition(
             UnitDefinition unit,
             Identifier name,
             SignatureReference signature,
-            MethodReference nativeMethod
+            MethodDefinition nativeMethod
         )
             : base(unit, name, signature)
         {
-            methodReference = nativeMethod;
-        }
-
-        public override void Stage1RoutineStubs()
-        {
-            NativeMethod = methodReference.Resolve();
+            NativeMethod = nativeMethod;
         }
 
         public override void Stage2RoutineBody()
@@ -136,6 +132,8 @@ namespace SLang.NET.Gen
     public class SLangRoutineDefinition : RoutineDefinition
     {
         public sealed override bool IsNative => false;
+        public bool IsUnboxedReturnType = false;
+
         private RoutineDeclaration AST { get; }
 
         public SLangRoutineDefinition(
@@ -145,8 +143,6 @@ namespace SLang.NET.Gen
             : base(unit, routine.Name, new SignatureReference(unit.Context, routine))
         {
             AST = routine;
-            // explicitly tell unit to add routine
-            unit.RegisterRoutine(this);
         }
 
         // some globals to share between code generation functionality
@@ -154,15 +150,18 @@ namespace SLang.NET.Gen
 
         public override void Stage1RoutineStubs()
         {
-            SignatureDefinition = SignatureReference.Resolve();
+            base.Stage1RoutineStubs();
 
             // name, attributes & return type
-            MethodAttributes attributes = MethodAttributes.Public | MethodAttributes.Static;
+            const MethodAttributes attributes = MethodAttributes.Public | MethodAttributes.Static;
+            var returnType = (IsUnboxedReturnType && SignatureDefinition.ReturnType is BuiltInUnitDefinition builtInType)
+                ? builtInType.WrappedNativeType
+                : SignatureDefinition.ReturnType.NativeType;
             NativeMethod =
                 new MethodDefinition(
                     Name.Value,
                     attributes,
-                    SignatureDefinition.ReturnType.NativeType);
+                    returnType);
 
             // parameters types
             foreach (var param in SignatureDefinition.Parameters)
@@ -249,6 +248,9 @@ namespace SLang.NET.Gen
                 if (!type.IsAssignableTo(Context.TypeSystem.Integer))
                     throw new TypeMismatchException(Context.TypeSystem.Integer, type);
 
+                if (type is BuiltInUnitDefinition builtInType)
+                    builtInType.Unboxed(ip);
+
                 ip.Append(brStub);
 
                 GenerateEntityList(body);
@@ -269,6 +271,10 @@ namespace SLang.NET.Gen
         /// <summary>
         /// Generate "RETURN" statement.
         /// </summary>
+        /// <para>
+        /// Routines with <see cref="IsUnboxedReturnType"/> flag set:
+        /// signature's return type is rewritten into unboxed primitive type.
+        /// </para>
         /// <para>Stack behavior:</para>
         /// <list type="number">
         /// <item><description>stack should be empty</description></item>
@@ -280,6 +286,11 @@ namespace SLang.NET.Gen
         private void GenerateReturn(Return ret)
         {
             var type = GenerateExpression(ret.OptionalValue);
+
+            if (IsUnboxedReturnType && type is BuiltInUnitDefinition builtInType)
+            {
+                builtInType.Unboxed(ip);
+            }
 
             if (!SignatureDefinition.ReturnType.IsAssignableFrom(type))
                 throw new TypeMismatchException(SignatureReference.ReturnType, type);
@@ -305,8 +316,20 @@ namespace SLang.NET.Gen
                     return Context.TypeSystem.Void;
 
                 case Literal literal:
-                    var unit = Context.ResolveBuiltIn(new UnitReference(Context, literal.Type));
-                    unit.LoadFromLiteral(literal.Value, ip);
+                    var unit = new UnitReference(Context, literal.Type).Resolve();
+
+                    if (!unit.CanLoadFromLiteral)
+                        throw new LiteralsNotSupported(unit, literal.Value);
+
+                    if (unit is BuiltInUnitDefinition u)
+                    {
+                        var storage = new VariableDefinition(u.NativeType);
+                        ip.Body.Variables.Add(storage);
+                        ip.Emit(OpCodes.Ldloca, storage);
+                        u.LoadFromLiteral(literal.Value, ip);
+                        ip.Emit(OpCodes.Call, u.Ctor);
+                        ip.Emit(OpCodes.Ldloc, storage);
+                    }
                     return unit;
 
                 case Call call:
@@ -337,7 +360,6 @@ namespace SLang.NET.Gen
         {
             // TODO: Scope.Lookup(reference.Name);
 
-            
             var index = Array.FindIndex(SignatureDefinition.Parameters, p => p.Name.Equals(reference.Name));
             if (index != -1)
             {
@@ -365,10 +387,12 @@ namespace SLang.NET.Gen
         /// <returns>Resolved routine definition</returns>
         private RoutineDefinition GenerateCall(Call call)
         {
-            if (call.Callee.Unit != null)
-                throw new NotImplementedException("Unit routines are not implemented yet.");
-
             var routine = new RoutineReference(Context, call.Callee).Resolve();
+
+            if (!routine.IsStatic)
+            {
+                throw new NotImplementedException("Non-static unit routines are not implemented yet.");
+            }
 
             // arguments:
             {

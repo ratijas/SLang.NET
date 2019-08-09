@@ -4,61 +4,112 @@ using System.Linq;
 using Mono.Cecil;
 using SLang.IR;
 using SLang.NET.BuiltIns;
+using static MoreLinq.Extensions.ForEachExtension;
 
 namespace SLang.NET.Gen
 {
     public class Context
     {
-        public SLangUnitDefinition GlobalUnit { get; set; }
-
+        /// <summary>
+        /// Collection of user-defined types / units.
+        /// </summary>
         public List<UnitDefinition> Units { get; } = new List<UnitDefinition>();
 
-        public List<BuiltInUnitDefinition> BuiltInUnits { get; } = new List<BuiltInUnitDefinition>();
+        /// <summary>
+        /// Container for user-defined static global routines.
+        ///
+        /// <para>Owned by <see cref="Units"/> list.</para>
+        /// </summary>
+        public SLangUnitDefinition GlobalUnit { get; set; }
 
-        public SLangUnitDefinition Runtime { get; }
+        /// <summary>
+        /// Collection of pre-defined units, which are part of the standard library.
+        /// </summary>
+        public List<BuiltInUnitDefinition> RuntimeUnits { get; } = new List<BuiltInUnitDefinition>();
 
+        /// <summary>
+        /// Container for pre-defined static global routines, which are part of the standard library.
+        ///
+        /// <para>Owned by <see cref="Units"/> list.</para>
+        /// </summary>
+        public SLangUnitDefinition RuntimeGlobalUnit { get; }
+
+        /// <summary>
+        /// Collection of platform-specific intrinsic routines.
+        /// Normally they should not be exposed to user programs,
+        /// but only visible / used from SLang standard library.
+        ///
+        /// <para>Owned by <see cref="Units"/> list.</para>
+        /// </summary>
+        public Intrinsics Intrinsics { get; }
+
+        public IEnumerable<UnitDefinition> AllUnits =>
+            Units.Concat(RuntimeUnits);
+
+        /// <summary>
+        /// Underlying platform's native module.
+        /// </summary>
         public ModuleDefinition NativeModule { get; }
 
+        /// <summary>
+        /// Bridge between SLang type system and platform type system. Provides 
+        /// </summary>
         public TypeSystem TypeSystem { get; }
 
         public Context(ModuleDefinition nativeModule)
         {
             NativeModule = nativeModule;
             TypeSystem = new TypeSystem(this);
-            Runtime = new SLangUnitDefinition(this, new Identifier("$Runtime"));
-            RegisterBuiltIns();
+
+            Intrinsics = RegisterUnit(new Intrinsics(this));
+            RuntimeGlobalUnit = RegisterUnit(new SLangUnitDefinition(this, new Identifier("$Runtime")));
+            RegisterRuntimeUnits();
         }
 
-        private void RegisterBuiltIns()
+        private void RegisterRuntimeUnits()
         {
             // high level
-            BuiltInUnits.Add(new VoidBuiltInUnitDefinition(this));
-            BuiltInUnits.Add(new IntegerBuiltInUnitDefinition(this));
-            BuiltInUnits.Add(new StringBuiltInUnitDefinition(this));
-            BuiltInUnits.Add(new RealBuiltInUnitDefinition(this));
-
-            Units.AddRange(BuiltInUnits);
+            RegisterRuntimeUnit(new VoidBuiltInUnitDefinition(this));
+            RegisterRuntimeUnit(new IntegerBuiltInUnitDefinition(this));
+            RegisterRuntimeUnit(new StringBuiltInUnitDefinition(this));
+            RegisterRuntimeUnit(new RealBuiltInUnitDefinition(this));
 
             // low level: no need to add native type
+        }
+
+        private void RegisterRuntimeUnit(BuiltInUnitDefinition unit)
+        {
+            // high level
+            RuntimeUnits.Add(unit);
+            // low level
+            RegisterNativeType(unit);
         }
 
         /// <summary>
         /// Add unit and its native underlying type. 
         /// </summary>
         /// <param name="unit">User-defined SLang unit</param>
-        internal void RegisterUnit(SLangUnitDefinition unit)
+        public T RegisterUnit<T>(T unit) where T : SLangUnitDefinition
         {
             // high level
             Units.Add(unit);
             // low level
-            NativeModule.Types.Add(unit.NativeTypeDefinition);
+            RegisterNativeType(unit);
+
+            return unit;
+        }
+
+        private void RegisterNativeType(UnitDefinition unit)
+        {
+            if (!unit.IsForeign)
+                NativeModule.Types.Add(unit.NativeTypeDefinition);
         }
 
         public UnitDefinition Resolve(UnitReference unitReference)
         {
             try
             {
-                return Units.Single(unit => unit.Name.Equals(unitReference.Name));
+                return AllUnits.Single(unit => unit == unitReference);
             }
             catch (InvalidOperationException)
             {
@@ -66,31 +117,35 @@ namespace SLang.NET.Gen
             }
         }
 
-        public RoutineDefinition Resolve(RoutineReference routineReference)
+        public RoutineDefinition Resolve(RoutineReference routine)
         {
-            if (routineReference.Unit != null)
-            {
-                var unit = routineReference.Unit.Resolve();
-                return unit.Resolve(routineReference);
-            }
-            else
+            // No unit reference? -> try global, then runtime.
+            // Else, resolve unit and forward the request.
+            if (routine.Unit == null)
             {
                 try
                 {
-                    return GlobalUnit.Resolve(routineReference);
+                    RoutineReference r = new RoutineReference(GlobalUnit, routine.Name);
+                    return GlobalUnit.Resolve(r);
                 }
                 catch (RoutineNotFoundException)
                 {
-                    return Runtime.Resolve(routineReference);
+                    RoutineReference r = new RoutineReference(RuntimeGlobalUnit, routine.Name);
+                    return RuntimeGlobalUnit.Resolve(r);
                 }
+            }
+            else
+            {
+                var unit = routine.Unit.Resolve();
+                return unit.Resolve(routine);
             }
         }
 
-        public BuiltInUnitDefinition ResolveBuiltIn(UnitReference unitReference)
+        internal BuiltInUnitDefinition ResolveBuiltIn(UnitReference unitReference)
         {
             try
             {
-                return BuiltInUnits.Single(unit => unit.Name.Equals(unitReference.Name));
+                return RuntimeUnits.Single(unit => unit == unitReference);
             }
             catch (InvalidOperationException)
             {
@@ -100,8 +155,8 @@ namespace SLang.NET.Gen
 
         public void Compile()
         {
-            Units.ForEach(unit => unit.Stage1RoutineStubs());
-            Units.ForEach(unit => unit.Stage2RoutineBody());
+            AllUnits.ForEach(unit => unit.Stage1RoutineStubs());
+            AllUnits.ForEach(unit => unit.Stage2RoutineBody());
         }
     }
 

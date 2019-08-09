@@ -222,7 +222,7 @@ namespace SLang.IR
 
     public class UnitRef : Entity
     {
-        public static UnitRef Void { get; } = new UnitRef(new Identifier("$void"));
+        public static UnitRef Void { get; } = new UnitRef(new Identifier(typeof(void).Name));
 
         public Identifier Name { get; }
 
