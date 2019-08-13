@@ -22,6 +22,9 @@ namespace SLang.NET.BuiltIns
         public NativeRoutineDefinition IntrinsicAdd;
         public NativeRoutineDefinition IntrinsicSub;
         public NativeRoutineDefinition IntrinsicNeg;
+        public NativeRoutineDefinition StandardIO_put_Integer;
+        public NativeRoutineDefinition StandardIO_put_String;
+        
 
         private SignatureReference unaryIntegerFuncSignature =>
             new SignatureReference(Context.TypeSystem.Integer,
@@ -30,6 +33,23 @@ namespace SLang.NET.BuiltIns
         private SignatureReference binaryIntegerFuncSignature =>
             new SignatureReference(Context.TypeSystem.Integer,
                 new[] {Context.TypeSystem.Integer, Context.TypeSystem.Integer});
+
+        private SignatureReference integerConsumerSignature =>
+            new SignatureReference(Context.TypeSystem.Void,
+                new[] {Context.TypeSystem.Integer});
+
+        private SignatureReference stringConsumerSignature =>
+            new SignatureReference(Context.TypeSystem.Void,
+                new[] {Context.TypeSystem.String});
+
+        private TypeDefinition consoleNativeType =>
+            Context.NativeModule.ImportReference(
+                new TypeReference(
+                    nameof(System),
+                    nameof(Console),
+                    null,
+                    Context.NativeModule.TypeSystem.CoreLibrary)).Resolve();
+
 
         public override void Stage1RoutineStubs()
         {
@@ -71,12 +91,38 @@ namespace SLang.NET.BuiltIns
                     new NativeRoutineDefinition(this, name, unaryIntegerFuncSignature, method));
             }
 
+            // StandardIO$put$Integer
+            {
+                var name = new Identifier("StandardIO$put$Integer");
+                var method = new MethodDefinition(name.Value,
+                    MethodAttributes.Public | MethodAttributes.Static,
+                    Context.TypeSystem.Void.NativeType);
+                method.Parameters.Add(new ParameterDefinition(Context.TypeSystem.Integer.NativeType));
+
+                RegisterRoutine(StandardIO_put_Integer =
+                    new NativeRoutineDefinition(this, name, integerConsumerSignature, method));
+            }
+            
+            // StandardIO$put$String
+            {
+                var name = new Identifier("StandardIO$put$String");
+                var method = new MethodDefinition(name.Value,
+                    MethodAttributes.Public | MethodAttributes.Static,
+                    Context.TypeSystem.Void.NativeType);
+                method.Parameters.Add(new ParameterDefinition(Context.TypeSystem.String.NativeType));
+
+                RegisterRoutine(StandardIO_put_String =
+                    new NativeRoutineDefinition(this, name, stringConsumerSignature, method));
+            }
+
+
             base.Stage1RoutineStubs();
         }
 
         public override void Stage2RoutineBody()
         {
             var integer = Context.TypeSystem.Integer;
+            var str = Context.TypeSystem.String;
 
             // add
             {
@@ -147,6 +193,50 @@ namespace SLang.NET.BuiltIns
                 ip.Emit(OpCodes.Call, integer.Ctor);
                 // return result
                 v.Load(ip);
+                ip.Emit(OpCodes.Ret);
+            }
+
+            // StandardIO$put$Integer
+            {
+                // direct proxy to void Console.Write(Int32)
+                var method = StandardIO_put_Integer;
+
+                var ip = method.NativeMethod.Body.GetILProcessor();
+                var writeForeign = consoleNativeType.Methods.Single(
+                    m => m.Name == nameof(Console.Write) &&
+                         m.Parameters.Count == 1 &&
+                         m.Parameters[0].ParameterType.Name ==
+                         Context.TypeSystem.Integer.WrappedNativeType.Name);
+                var writeImported = Context.NativeModule.ImportReference(writeForeign);
+
+                // unbox argument
+                ip.Emit(OpCodes.Ldarg_0);
+                ip.Emit(OpCodes.Ldfld, integer.ValueField);
+                // call method
+                ip.Emit(OpCodes.Call, writeImported);
+                // return nothing
+                ip.Emit(OpCodes.Ret);
+            }
+            
+            // StandardIO$put$String
+            {
+                // direct proxy to void Console.Write(String)
+                var method = StandardIO_put_String;
+
+                var ip = method.NativeMethod.Body.GetILProcessor();
+                var writeForeign = consoleNativeType.Methods.Single(
+                    m => m.Name == nameof(Console.Write) &&
+                         m.Parameters.Count == 1 &&
+                         m.Parameters[0].ParameterType.Name ==
+                         Context.TypeSystem.String.WrappedNativeType.Name);
+                var writeImported = Context.NativeModule.ImportReference(writeForeign);
+
+                // unbox argument
+                ip.Emit(OpCodes.Ldarg_0);
+                ip.Emit(OpCodes.Ldfld, str.ValueField);
+                // call method
+                ip.Emit(OpCodes.Call, writeImported);
+                // return nothing
                 ip.Emit(OpCodes.Ret);
             }
 
