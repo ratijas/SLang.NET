@@ -68,6 +68,21 @@ namespace SLang.NET.Gen
             $"Routine not found: {Routine}";
     }
 
+    public class VariableNotFoundException : CompilerException
+    {
+        public Scope Scope { get; }
+        public Identifier Name { get; }
+
+        public VariableNotFoundException(Scope scope, Identifier name)
+        {
+            Scope = scope;
+            Name = name;
+        }
+
+        public override string Message =>
+            $"Variable {Name} not found in scope {Scope}";
+    }
+
     public class CompilationStageException : CompilerException
     {
         public Context Context { get; }
