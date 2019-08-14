@@ -1,0 +1,82 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": []
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous"
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST"
+        },
+        {
+          "type": "UNIT_REF",
+          "value": "Integer"
+        },
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "VARIABLE",
+              "children": [
+                {
+                  "type": "IDENTIFIER",
+                  "value": "foo"
+                },
+                {
+                  "type": "REF_VAL_SPEC",
+                  "value": "ref"
+                },
+                {
+                  "type": "CONCURRENT_SPEC",
+                  "value": null
+                },
+                {
+                  "type": "FOREIGN_SPEC",
+                  "value": null
+                },
+                {
+                  "type": "UNIT_REF",
+                  "value": "Integer"
+                },
+                {
+                  "type": "LITERAL",
+                  "value": "42",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "Integer"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "RETURN",
+              "children": [
+                {
+                  "type": "REFERENCE",
+                  "children": [
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "foo"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}
