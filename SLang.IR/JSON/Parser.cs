@@ -315,11 +315,14 @@ namespace SLang.IR.JSON
             return Guard(o, children =>
             {
                 var name = children.OfType<Identifier>().Single();
-                var type = children.OfType<UnitRef>().DefaultIfEmpty(null).SingleOrDefault();
-                var init = children.OfType<Expression>().DefaultIfEmpty(null).SingleOrDefault();
+                var refValSpec = children.OfType<UnitDeclaration.RefValSpec>()
+                    .DefaultIfEmpty(new UnitDeclaration.RefValSpec()).SingleOrDefault();
+                var concurrentSpec = children.OfType<UnitDeclaration.ConcurrentSpec>().SingleOrDefault();
+                var foreignSpec = children.OfType<ForeignSpec>().SingleOrDefault();
 
-                if (type == null && init == null)
-                    throw new JsonFormatException(o, $"variable {name} has no type nor initializer");
+                var type = children.OfType<UnitRef>().Single();
+                var init = children.OfType<Expression>().Single();
+
                 return new Variable(name, type, init);
             });
         }
@@ -392,7 +395,7 @@ namespace SLang.IR.JSON
         {
             EntityMixin.CheckType(o, STMT_IF_THEN_LIST);
             EntityMixin.ValueMustBeNull(o);
-            
+
             return new If.StmtIfThenList(ParseChildren(o).OfType<If.StmtIfThen>().ToList());
         }
 
