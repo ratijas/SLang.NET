@@ -129,7 +129,7 @@ namespace SLang.NET.BuiltIns
                 var method = IntrinsicAdd;
 
                 var ip = method.NativeMethod.Body.GetILProcessor();
-                var result = new Variable(integer);
+                var result = new BodyVariable(integer);
                 method.NativeMethod.Body.InitLocals = true;
 
                 // var result; // value type used by ref
@@ -154,7 +154,7 @@ namespace SLang.NET.BuiltIns
                 var method = IntrinsicSub;
 
                 var ip = method.NativeMethod.Body.GetILProcessor();
-                var result = new Variable(integer);
+                var result = new BodyVariable(integer);
                 method.NativeMethod.Body.InitLocals = true;
 
                 // var result; // value type used by ref
@@ -179,7 +179,7 @@ namespace SLang.NET.BuiltIns
                 var method = IntrinsicNeg;
 
                 var ip = method.NativeMethod.Body.GetILProcessor();
-                var v = new Variable(integer);
+                var v = new BodyVariable(integer);
                 method.NativeMethod.Body.InitLocals = true;
 
                 // var result; // value type used by ref
@@ -210,8 +210,8 @@ namespace SLang.NET.BuiltIns
                 var writeImported = Context.NativeModule.ImportReference(writeForeign);
 
                 // unbox argument
-                ip.Emit(OpCodes.Ldarg_0);
-                ip.Emit(OpCodes.Ldfld, integer.ValueField);
+                new ArgumentVariable(integer, 0).Load(ip);
+                integer.Unboxed(ip);
                 // call method
                 ip.Emit(OpCodes.Call, writeImported);
                 // return nothing
@@ -232,8 +232,8 @@ namespace SLang.NET.BuiltIns
                 var writeImported = Context.NativeModule.ImportReference(writeForeign);
 
                 // unbox argument
-                ip.Emit(OpCodes.Ldarg_0);
-                ip.Emit(OpCodes.Ldfld, str.ValueField);
+                new ArgumentVariable(str, 0).Load(ip);
+                str.Unboxed(ip);
                 // call method
                 ip.Emit(OpCodes.Call, writeImported);
                 // return nothing

@@ -261,7 +261,7 @@ namespace SLang.NET.Gen
         {
             if (!IsForeign)
             {
-                var boxed = new Variable(this);
+                var boxed = new BodyVariable(this);
                 var raw = new VariableDefinition(WrappedNativeType);
 
                 ip.Body.Variables.Add(raw);
@@ -275,7 +275,7 @@ namespace SLang.NET.Gen
                 return boxed;
             }
 
-            return new Variable(Context.TypeSystem.Void);
+            return new BodyVariable(Context.TypeSystem.Void);
         }
 
         /// <summary>

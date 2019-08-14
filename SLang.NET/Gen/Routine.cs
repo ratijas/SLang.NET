@@ -428,12 +428,12 @@ namespace SLang.NET.Gen
             var routine = GenerateCall(call);
             if (!routine.SignatureReference.ReturnType.IsVoid)
             {
-                var variable = new Variable(routine.SignatureDefinition.ReturnType);
+                var variable = new BodyVariable(routine.SignatureDefinition.ReturnType);
                 variable.Store(ip);
                 return variable;
             }
 
-            return new Variable(Context.TypeSystem.Void);
+            return new BodyVariable(Context.TypeSystem.Void);
         }
 
         /// <summary>
