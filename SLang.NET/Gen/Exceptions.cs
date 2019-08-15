@@ -68,6 +68,21 @@ namespace SLang.NET.Gen
             $"Routine not found: {Routine}";
     }
 
+    public class VariableNotFoundException : CompilerException
+    {
+        public Scope Scope { get; }
+        public Identifier Name { get; }
+
+        public VariableNotFoundException(Scope scope, Identifier name)
+        {
+            Scope = scope;
+            Name = name;
+        }
+
+        public override string Message =>
+            $"Variable {Name} not found in scope {Scope.Name}";
+    }
+
     public class CompilationStageException : CompilerException
     {
         public Context Context { get; }
@@ -100,11 +115,11 @@ namespace SLang.NET.Gen
 
     public class TypeMismatchException : CompilerException
     {
-        public UnitReference Expected { get; }
+        public IHasType Expected { get; }
 
-        public UnitReference Actual { get; }
+        public IHasType Actual { get; }
 
-        public TypeMismatchException(UnitReference expected, UnitReference actual)
+        public TypeMismatchException(IHasType expected, IHasType actual)
         {
             Expected = expected;
             Actual = actual;
