@@ -103,7 +103,7 @@ namespace SLang.NET.Gen
 
         public ArgumentVariable(UnitDefinition type, Identifier name, int index) : base(type, name)
         {
-            if (index == -1)
+            if (index < 0)
                 throw new ArgumentNullException(nameof(index));
             Index = index;
         }
