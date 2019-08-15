@@ -36,7 +36,7 @@ namespace SLang.NET.Gen
         /// <summary>
         /// Variables declared in this scope.
         /// </summary>
-        public Dictionary<Identifier, Variable> Variables;
+        public Dictionary<Identifier, Variable> Variables = new Dictionary<Identifier, Variable>();
 
         public Variable Get(Identifier name)
         {
