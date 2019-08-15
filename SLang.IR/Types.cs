@@ -131,7 +131,7 @@ namespace SLang.IR
         }
     }
 
-    public class Variable : Declaration
+    public class VariableDeclaration : Declaration
     {
         // TODO: replace with appropriate Type type
         public UnitRef Type { get; set; }
@@ -141,7 +141,7 @@ namespace SLang.IR
         public bool IsForeign { get; set; }
 
 
-        public Variable(Identifier name, UnitRef type, Expression initializer)
+        public VariableDeclaration(Identifier name, UnitRef type, Expression initializer)
             : base(name)
         {
             Type = type;

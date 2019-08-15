@@ -307,7 +307,7 @@ namespace SLang.IR.JSON
             });
         }
 
-        private Variable ParseVariable(JsonEntity o)
+        private VariableDeclaration ParseVariable(JsonEntity o)
         {
             EntityMixin.CheckType(o, VARIABLE);
             EntityMixin.ValueMustBeNull(o);
@@ -323,7 +323,7 @@ namespace SLang.IR.JSON
                 var type = children.OfType<UnitRef>().Single();
                 var init = children.OfType<Expression>().Single();
 
-                return new Variable(name, type, init);
+                return new VariableDeclaration(name, type, init);
             });
         }
 
