@@ -101,6 +101,17 @@ namespace SLang.NET.Gen
             return other.GetType().IsAssignableFrom(this);
         }
 
+        public void AssertIsAssignableFrom(IHasType other)
+        {
+            if (!IsAssignableFrom(other))
+                throw new TypeMismatchException(this, other);
+        }
+
+        public void AssertIsAssignableTo(IHasType other)
+        {
+            other.GetType().AssertIsAssignableFrom(this);
+        }
+
         public virtual void Stage1RoutineStubs()
         {
             foreach (var routine in Routines)
@@ -261,7 +272,7 @@ namespace SLang.NET.Gen
         {
             if (!IsForeign)
             {
-                var boxed = new Variable(this);
+                var boxed = new BodyVariable(this);
                 var raw = new VariableDefinition(WrappedNativeType);
 
                 ip.Body.Variables.Add(raw);
@@ -275,7 +286,7 @@ namespace SLang.NET.Gen
                 return boxed;
             }
 
-            return new Variable(Context.TypeSystem.Void);
+            return new BodyVariable(Context.TypeSystem.Void);
         }
 
         /// <summary>

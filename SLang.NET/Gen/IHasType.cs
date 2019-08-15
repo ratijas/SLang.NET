@@ -15,7 +15,7 @@ namespace SLang.NET.Gen
         }
     }
 
-    public partial class Variable : IHasType
+    public abstract partial class Variable : IHasType
     {
         public new UnitDefinition GetType()
         {

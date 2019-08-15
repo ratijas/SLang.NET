@@ -131,21 +131,21 @@ namespace SLang.IR
         }
     }
 
-    public class Variable : Declaration
+    public class VariableDeclaration : Declaration
     {
         // TODO: replace with appropriate Type type
-        /// <summary>
-        /// Type may be implicit, in which case it is up to compiler to infer it from initializer expression.
-        /// </summary>
-        public UnitRef OptionalType { get; set; }
+        public UnitRef Type { get; set; }
+        public Expression Initializer { get; set; }
+        public UnitDeclaration.RefValSpec RefOrVal { get; set; }
+        public bool IsConcurrent { get; set; }
+        public bool IsForeign { get; set; }
 
-        public Expression OptionalInitializer { get; set; }
 
-        public Variable(Identifier name, UnitRef type, Expression initializer)
+        public VariableDeclaration(Identifier name, UnitRef type, Expression initializer)
             : base(name)
         {
-            OptionalType = type;
-            OptionalInitializer = initializer;
+            Type = type;
+            Initializer = initializer;
         }
     }
 

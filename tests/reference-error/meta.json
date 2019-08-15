@@ -2,7 +2,7 @@
   "stages": {
     "compiler": {
       "pass": false,
-      "error": "UnresolvedReferenceException: your_girlfriend"
+      "error": "Variable your_girlfriend not found in scope <anonymous>"
     }
   }
 }
