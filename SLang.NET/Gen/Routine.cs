@@ -154,9 +154,10 @@ namespace SLang.NET.Gen
 
             // name, attributes & return type
             const MethodAttributes attributes = MethodAttributes.Public | MethodAttributes.Static;
-            var returnType = (IsUnboxedReturnType && SignatureDefinition.ReturnType is BuiltInUnitDefinition builtInType)
-                ? builtInType.WrappedNativeType
-                : SignatureDefinition.ReturnType.NativeType;
+            var returnType =
+                (IsUnboxedReturnType && SignatureDefinition.ReturnType is BuiltInUnitDefinition builtInType)
+                    ? builtInType.WrappedNativeType
+                    : SignatureDefinition.ReturnType.NativeType;
             NativeMethod =
                 new MethodDefinition(
                     Name.Value,
@@ -330,6 +331,7 @@ namespace SLang.NET.Gen
                         ip.Emit(OpCodes.Call, u.Ctor);
                         ip.Emit(OpCodes.Ldloc, storage);
                     }
+
                     return unit;
 
                 case Call call:
