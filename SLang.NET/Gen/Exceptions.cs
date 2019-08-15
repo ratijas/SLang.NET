@@ -80,7 +80,7 @@ namespace SLang.NET.Gen
         }
 
         public override string Message =>
-            $"Variable {Name} not found in scope {Scope}";
+            $"Variable {Name} not found in scope {Scope.Name}";
     }
 
     public class CompilationStageException : CompilerException
@@ -115,11 +115,11 @@ namespace SLang.NET.Gen
 
     public class TypeMismatchException : CompilerException
     {
-        public UnitReference Expected { get; }
+        public IHasType Expected { get; }
 
-        public UnitReference Actual { get; }
+        public IHasType Actual { get; }
 
-        public TypeMismatchException(UnitReference expected, UnitReference actual)
+        public TypeMismatchException(IHasType expected, IHasType actual)
         {
             Expected = expected;
             Actual = actual;

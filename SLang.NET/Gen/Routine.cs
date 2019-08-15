@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using static MoreLinq.Extensions.ForEachExtension;
 using SLang.IR;
 
 namespace SLang.NET.Gen
@@ -87,6 +88,7 @@ namespace SLang.NET.Gen
         {
             SignatureDefinition = SignatureReference.Resolve();
         }
+
         public abstract void Stage2RoutineBody();
 
         public void VerifyCallArguments(IReadOnlyList<UnitDefinition> argumentTypes)
@@ -102,8 +104,7 @@ namespace SLang.NET.Gen
             {
                 var param = parameters[i];
                 var arg = argumentTypes[i];
-                if (!param.Type.IsAssignableFrom(arg))
-                    throw new TypeMismatchException(param.Type, arg);
+                arg.AssertIsAssignableTo(param.Type);
             }
         }
     }
@@ -147,6 +148,8 @@ namespace SLang.NET.Gen
 
         // some globals to share between code generation functionality
         private ILProcessor ip;
+        private Scope scopeRoot;
+        private Scope scopeCurrent;
 
         public override void Stage1RoutineStubs()
         {
@@ -178,11 +181,20 @@ namespace SLang.NET.Gen
                 throw new CompilationStageException(Context, this, 2);
 
             ip = NativeMethod.Body.GetILProcessor();
+            // TODO: parent global scope
+            scopeCurrent = scopeRoot = new Scope();
+            // function arguments are in the root scope
+            SignatureDefinition.Parameters.ForEach((parameter, index) =>
+            {
+                var argument = new ArgumentVariable(parameter.Type, parameter.Name, index);
+                scopeRoot.Declare(parameter.Name, argument);
+            });
 
             GenerateEntityList(AST.Body);
 
             FixInitLocals();
             ip = null;
+            scopeCurrent = scopeRoot = null;
         }
 
         /// <summary>
@@ -192,6 +204,8 @@ namespace SLang.NET.Gen
         /// <param name="entities">"ENTITY_LIST" AST fragment</param>
         private void GenerateEntityList(List<Entity> entities)
         {
+            scopeCurrent = new Scope(scopeCurrent);
+
             foreach (var entity in entities)
             {
                 switch (entity)
@@ -207,11 +221,39 @@ namespace SLang.NET.Gen
                     case If conditionals:
                         GenerateConditionalStatements(conditionals);
                         break;
+                    
+                    case VariableDeclaration declaration:
+                        GenerateVariableDeclaration(declaration);
+                        break;
 
                     default:
                         throw new NotImplementedException("Entity type is not implemented: " + entity.GetType());
                 }
             }
+            
+            scopeCurrent = scopeCurrent.ParentScope();
+        }
+
+        /// <summary>
+        /// Generate "VARIABLE" declaration, evaluate its initializer and assign. 
+        /// </summary>
+        /// <para>Stack behavior: expects nothing, leaves nothing.</para>
+        /// <param name="declaration">SLang IR variable declaration.</param>
+        private void GenerateVariableDeclaration(VariableDeclaration declaration)
+        {
+            var name = declaration.Name;
+            var varType = new UnitReference(Context, declaration.Type).Resolve();
+            Variable variable = new BodyVariable(varType, name);
+
+            // declare in the current scope
+            scopeCurrent.Declare(name, variable);
+            // evaluate initializer
+            var exprType = GenerateExpression(declaration.Initializer);
+            // assign
+            variable.Store(ip);
+            
+            // verify
+            varType.AssertIsAssignableFrom(exprType);
         }
 
         /// <summary>
@@ -246,8 +288,7 @@ namespace SLang.NET.Gen
                 }
 
                 var type = GenerateExpression(condition);
-                if (!type.IsAssignableTo(Context.TypeSystem.Integer))
-                    throw new TypeMismatchException(Context.TypeSystem.Integer, type);
+                type.AssertIsAssignableTo(Context.TypeSystem.Integer);
 
                 if (type is BuiltInUnitDefinition builtInType)
                     builtInType.Unboxed(ip);
@@ -293,8 +334,7 @@ namespace SLang.NET.Gen
                 builtInType.Unboxed(ip);
             }
 
-            if (!SignatureDefinition.ReturnType.IsAssignableFrom(type))
-                throw new TypeMismatchException(SignatureReference.ReturnType, type);
+            SignatureDefinition.ReturnType.AssertIsAssignableFrom(type);
 
             ip.Emit(OpCodes.Ret);
         }
@@ -362,15 +402,9 @@ namespace SLang.NET.Gen
         {
             // TODO: Scope.Lookup(reference.Name);
 
-            var index = Array.FindIndex(SignatureDefinition.Parameters, p => p.Name.Equals(reference.Name));
-            if (index != -1)
-            {
-                ip.Emit(OpCodes.Ldarg, index);
-                var param = SignatureDefinition.Parameters[index];
-                return param.Type;
-            }
-
-            throw new UnresolvedReferenceException(reference);
+            var variable = scopeCurrent.Get(reference.Name);
+            variable.Load(ip);
+            return variable.GetType();
         }
 
         /// <summary>

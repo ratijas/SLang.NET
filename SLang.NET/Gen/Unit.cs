@@ -101,6 +101,17 @@ namespace SLang.NET.Gen
             return other.GetType().IsAssignableFrom(this);
         }
 
+        public void AssertIsAssignableFrom(IHasType other)
+        {
+            if (!IsAssignableFrom(other))
+                throw new TypeMismatchException(this, other);
+        }
+
+        public void AssertIsAssignableTo(IHasType other)
+        {
+            other.GetType().AssertIsAssignableFrom(this);
+        }
+
         public virtual void Stage1RoutineStubs()
         {
             foreach (var routine in Routines)
