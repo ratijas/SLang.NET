@@ -405,4 +405,16 @@ namespace SLang.IR
             }
         }
     }
+
+    public class Assignment : Entity
+    {
+        public Expression LValue { get; set; }
+        public Expression RValue { get; set; }
+
+        public Assignment(Expression lValue, Expression rValue)
+        {
+            LValue = lValue;
+            RValue = rValue;
+        }
+    }
 }

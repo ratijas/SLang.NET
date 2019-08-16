@@ -1,0 +1,91 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST"
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous"
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST"
+        },
+        null,
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "VARIABLE",
+              "children": [
+                {
+                  "type": "IDENTIFIER",
+                  "value": "mutable_variable_x"
+                },
+                {
+                  "type": "REF_VAL_SPEC",
+                  "value": "ref"
+                },
+                {
+                  "type": "CONCURRENT_SPEC",
+                  "value": null
+                },
+                {
+                  "type": "FOREIGN_SPEC",
+                  "value": null
+                },
+                {
+                  "type": "UNIT_REF",
+                  "value": "Integer"
+                },
+                {
+                  "type": "LITERAL",
+                  "value": "42",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "Integer"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "ASSIGNMENT",
+              "children": [
+                {
+                  "type": "REFERENCE",
+                  "children": [
+                    {
+                      "type": "IDENTIFIER",
+                      "value": "mutable_variable_x"
+                    }
+                  ]
+                },
+                {
+                  "type": "LITERAL",
+                  "value": "37",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "Integer"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "RETURN"
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}
