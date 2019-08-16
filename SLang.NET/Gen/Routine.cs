@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using static MoreLinq.Extensions.ForEachExtension;
@@ -460,11 +461,7 @@ namespace SLang.NET.Gen
             // arguments:
             {
                 // compile & leave on the stack
-                var args = new List<UnitDefinition>(call.Arguments.Count);
-                foreach (var expression in call.Arguments)
-                {
-                    args.Add(GenerateExpression(expression));
-                }
+                var args = call.Arguments.Select(GenerateExpression).ToList();
 
                 // verify
                 routine.VerifyCallArguments(args);
