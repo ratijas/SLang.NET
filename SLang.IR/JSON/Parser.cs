@@ -57,7 +57,8 @@ namespace SLang.IR.JSON
             IF = "IF",
             STMT_IF_THEN_LIST = "STMT_IF_THEN_LIST",
             STMT_IF_THEN = "STMT_IF_THEN",
-            ASSIGNMENT = "ASSIGNMENT";
+            ASSIGNMENT = "ASSIGNMENT",
+            LOOP = "LOOP";
 
         public Parser()
         {
@@ -88,6 +89,7 @@ namespace SLang.IR.JSON
                 {STMT_IF_THEN_LIST, ParseStmtIfThenList},
                 {STMT_IF_THEN, ParseStmtIfThen},
                 {ASSIGNMENT, ParseAssignment},
+                {LOOP, ParseLoop},
             };
         }
 
@@ -428,6 +430,22 @@ namespace SLang.IR.JSON
             var rValue = children[1];
 
             return new Assignment(lValue, rValue);
+        }
+
+        private Loop ParseLoop(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, LOOP);
+
+            return Guard(o, children =>
+            {
+                var exit_condition = children.OfType<Expression>().DefaultIfEmpty().SingleOrDefault();
+                var body = children.OfType<EntityList>().SingleOrDefault();
+
+                // var invariants = children.OfType<Expression>().First();
+                // var variants = children.OfType<Expression>().Skip(1).First();
+
+                return new Loop(exit_condition, body);
+            });
         }
 
         /// <summary>

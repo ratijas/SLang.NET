@@ -417,4 +417,21 @@ namespace SLang.IR
             RValue = rValue;
         }
     }
+
+    public class Loop : Entity
+    {
+        public Expression OptionalExitCondition { get; set; }
+        public List<Entity> Body { get; } = new List<Entity>();
+
+        public Loop(Expression optionalExitCondition, IEnumerable<Entity> body)
+        {
+            OptionalExitCondition = optionalExitCondition;
+            Body.AddRange(body);
+        }
+
+        internal Loop(Expression optionalExitCondition, EntityList body)
+            : this(optionalExitCondition, body?.Children)
+        {
+        }
+    }
 }
