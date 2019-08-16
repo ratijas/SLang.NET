@@ -221,16 +221,20 @@ namespace SLang.NET.Gen
                     case If conditionals:
                         GenerateConditionalStatements(conditionals);
                         break;
-                    
+
                     case VariableDeclaration declaration:
                         GenerateVariableDeclaration(declaration);
+                        break;
+
+                    case Assignment assignment:
+                        GenerateAssignment(assignment);
                         break;
 
                     default:
                         throw new NotImplementedException("Entity type is not implemented: " + entity.GetType());
                 }
             }
-            
+
             scopeCurrent = scopeCurrent.ParentScope();
         }
 
@@ -251,9 +255,32 @@ namespace SLang.NET.Gen
             var exprType = GenerateExpression(declaration.Initializer);
             // assign
             variable.Store(ip);
-            
+
             // verify
             varType.AssertIsAssignableFrom(exprType);
+        }
+
+        /// <summary>
+        /// Generate "ASSIGNMENT" statement, evaluate lvalue, rvalue, and assign. 
+        /// </summary>
+        /// <para>Stack behavior: expects nothing, leaves nothing.</para>
+        /// <param name="assignment">SLang IR assignment statement.</param>
+        private void GenerateAssignment(Assignment assignment)
+        {
+            var rvalueType = GenerateExpression(assignment.RValue);
+
+            switch (assignment.LValue)
+            {
+                case Reference reference:
+                    var lvalue = scopeCurrent.Get(reference.Name);
+                    lvalue.GetType().AssertIsAssignableFrom(rvalueType);
+                    lvalue.Store(ip);
+                    break;
+
+                default:
+                    throw new NotImplementedException(
+                        $"only references are supported as lvalues, got: {assignment.LValue}");
+            }
         }
 
         /// <summary>
