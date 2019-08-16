@@ -1,0 +1,210 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST"
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {
+          "type": "IDENTIFIER",
+          "value": "$anonymous"
+        },
+        null,
+        {
+          "type": "PARAMETER_LIST"
+        },
+        null,
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "VARIABLE",
+              "children": [
+                {
+                  "type": "IDENTIFIER",
+                  "value": "i"
+                },
+                {
+                  "type": "REF_VAL_SPEC",
+                  "value": "ref"
+                },
+                {
+                  "type": "CONCURRENT_SPEC",
+                  "value": null
+                },
+                {
+                  "type": "FOREIGN_SPEC",
+                  "value": null
+                },
+                {
+                  "type": "UNIT_REF",
+                  "value": "Integer"
+                },
+                {
+                  "type": "LITERAL",
+                  "value": "1",
+                  "children": [
+                    {
+                      "type": "UNIT_REF",
+                      "value": "Integer"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "LOOP",
+              "children": [
+                null,
+                {
+                  "type": "CALL",
+                  "children": [
+                    {
+                      "type": "CALLEE",
+                      "children": [
+                        {
+                          "type": "IDENTIFIER",
+                          "value": "Integer"
+                        },
+                        {
+                          "type": "IDENTIFIER",
+                          "value": "operator<(Integer,Integer)"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "EXPRESSION_LIST",
+                      "children": [
+                        {
+                          "type": "REFERENCE",
+                          "children": [
+                            {
+                              "type": "IDENTIFIER",
+                              "value": "i"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "LITERAL",
+                          "value": "4",
+                          "children": [
+                            {
+                              "type": "UNIT_REF",
+                              "value": "Integer"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                null,
+                {
+                  "type": "ENTITY_LIST",
+                  "children": [
+                    {
+                      "type": "CALL",
+                      "children": [
+                        {
+                          "type": "CALLEE",
+                          "children": [
+                            {
+                              "type": "IDENTIFIER",
+                              "value": "$Intrinsics"
+                            },
+                            {
+                              "type": "IDENTIFIER",
+                              "value": "StandardIO$put$Integer"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "EXPRESSION_LIST",
+                          "children": [
+                            {
+                              "type": "REFERENCE",
+                              "children": [
+                                {
+                                  "type": "IDENTIFIER",
+                                  "value": "i"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ASSIGNMENT",
+                      "children": [
+                        {
+                          "type": "REFERENCE",
+                          "children": [
+                            {
+                              "type": "IDENTIFIER",
+                              "value": "i"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "CALL",
+                          "children": [
+                            {
+                              "type": "CALLEE",
+                              "children": [
+                                {
+                                  "type": "IDENTIFIER",
+                                  "value": "Integer"
+                                },
+                                {
+                                  "type": "IDENTIFIER",
+                                  "value": "operator+(Integer,Integer)"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "EXPRESSION_LIST",
+                              "children": [
+                                {
+                                  "type": "REFERENCE",
+                                  "children": [
+                                    {
+                                      "type": "IDENTIFIER",
+                                      "value": "i"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "LITERAL",
+                                  "value": "1",
+                                  "children": [
+                                    {
+                                      "type": "UNIT_REF",
+                                      "value": "Integer"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                null
+              ]
+            },
+            {
+              "type": "RETURN"
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}
