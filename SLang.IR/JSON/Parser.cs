@@ -56,7 +56,9 @@ namespace SLang.IR.JSON
             CONCURRENT_SPEC = "CONCURRENT_SPEC",
             IF = "IF",
             STMT_IF_THEN_LIST = "STMT_IF_THEN_LIST",
-            STMT_IF_THEN = "STMT_IF_THEN";
+            STMT_IF_THEN = "STMT_IF_THEN",
+            ASSIGNMENT = "ASSIGNMENT",
+            LOOP = "LOOP";
 
         public Parser()
         {
@@ -86,6 +88,8 @@ namespace SLang.IR.JSON
                 {IF, ParseIf},
                 {STMT_IF_THEN_LIST, ParseStmtIfThenList},
                 {STMT_IF_THEN, ParseStmtIfThen},
+                {ASSIGNMENT, ParseAssignment},
+                {LOOP, ParseLoop},
             };
         }
 
@@ -409,6 +413,38 @@ namespace SLang.IR.JSON
                 var condition = children.OfType<Expression>().Single();
                 var body = children.OfType<EntityList>().Single().Children;
                 return new If.StmtIfThen(condition, body);
+            });
+        }
+
+        private Assignment ParseAssignment(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, ASSIGNMENT);
+            EntityMixin.ValueMustBeNull(o);
+
+            var children = ParseChildren(o).OfType<Expression>().ToList();
+            if (children.Count != 2)
+                throw new JsonFormatException(o,
+                    $"assignment must have exactly 2 expression children, got: {children.Count}");
+
+            var lValue = children[0];
+            var rValue = children[1];
+
+            return new Assignment(lValue, rValue);
+        }
+
+        private Loop ParseLoop(JsonEntity o)
+        {
+            EntityMixin.CheckType(o, LOOP);
+
+            return Guard(o, children =>
+            {
+                var exit_condition = children.OfType<Expression>().DefaultIfEmpty().SingleOrDefault();
+                var body = children.OfType<EntityList>().SingleOrDefault();
+
+                // var invariants = children.OfType<Expression>().First();
+                // var variants = children.OfType<Expression>().Skip(1).First();
+
+                return new Loop(exit_condition, body);
             });
         }
 

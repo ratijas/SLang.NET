@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using static MoreLinq.Extensions.ForEachExtension;
@@ -221,16 +222,24 @@ namespace SLang.NET.Gen
                     case If conditionals:
                         GenerateConditionalStatements(conditionals);
                         break;
-                    
+
                     case VariableDeclaration declaration:
                         GenerateVariableDeclaration(declaration);
+                        break;
+
+                    case Assignment assignment:
+                        GenerateAssignment(assignment);
+                        break;
+
+                    case Loop loop:
+                        GenerateLoop(loop);
                         break;
 
                     default:
                         throw new NotImplementedException("Entity type is not implemented: " + entity.GetType());
                 }
             }
-            
+
             scopeCurrent = scopeCurrent.ParentScope();
         }
 
@@ -251,9 +260,65 @@ namespace SLang.NET.Gen
             var exprType = GenerateExpression(declaration.Initializer);
             // assign
             variable.Store(ip);
-            
+
             // verify
             varType.AssertIsAssignableFrom(exprType);
+        }
+
+        /// <summary>
+        /// Generate "ASSIGNMENT" statement, evaluate lvalue, rvalue, and assign. 
+        /// </summary>
+        /// <para>Stack behavior: expects nothing, leaves nothing.</para>
+        /// <param name="assignment">SLang IR assignment statement.</param>
+        private void GenerateAssignment(Assignment assignment)
+        {
+            var rvalueType = GenerateExpression(assignment.RValue);
+
+            switch (assignment.LValue)
+            {
+                case Reference reference:
+                    var lvalue = scopeCurrent.Get(reference.Name);
+                    lvalue.GetType().AssertIsAssignableFrom(rvalueType);
+                    lvalue.Store(ip);
+                    break;
+
+                default:
+                    throw new NotImplementedException(
+                        $"only references are supported as lvalues, got: {assignment.LValue}");
+            }
+        }
+
+        /// <summary>
+        /// Generate "LOOP" statement. Only Exit condition and Body properties are supported. 
+        /// </summary>
+        /// <para>Stack behavior: expects nothing, leaves nothing.</para>
+        /// <param name="loop">SLang IR loop statement.</param>
+        private void GenerateLoop(Loop loop)
+        {
+            scopeCurrent = new Scope(scopeCurrent);
+
+            Instruction loopStart, loopExit;
+            ip.Append(loopStart = ip.Create(OpCodes.Nop));
+            loopExit = ip.Create(OpCodes.Nop);
+
+            var condition = loop.OptionalExitCondition;
+            if (condition != null)
+            {
+                var type = GenerateExpression(condition);
+                type.AssertIsAssignableTo(Context.TypeSystem.Integer);
+
+                if (type is BuiltInUnitDefinition builtInType)
+                    builtInType.Unboxed(ip);
+                
+                ip.Emit(OpCodes.Brfalse, loopExit);
+            }
+
+            GenerateEntityList(loop.Body);
+
+            ip.Emit(OpCodes.Br, loopStart);
+            ip.Append(loopExit);
+
+            scopeCurrent = scopeCurrent.ParentScope();
         }
 
         /// <summary>
@@ -433,11 +498,7 @@ namespace SLang.NET.Gen
             // arguments:
             {
                 // compile & leave on the stack
-                var args = new List<UnitDefinition>(call.Arguments.Count);
-                foreach (var expression in call.Arguments)
-                {
-                    args.Add(GenerateExpression(expression));
-                }
+                var args = call.Arguments.Select(GenerateExpression).ToList();
 
                 // verify
                 routine.VerifyCallArguments(args);
