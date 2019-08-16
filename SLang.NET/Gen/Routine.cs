@@ -231,6 +231,10 @@ namespace SLang.NET.Gen
                         GenerateAssignment(assignment);
                         break;
 
+                    case Loop loop:
+                        GenerateLoop(loop);
+                        break;
+
                     default:
                         throw new NotImplementedException("Entity type is not implemented: " + entity.GetType());
                 }
@@ -282,6 +286,39 @@ namespace SLang.NET.Gen
                     throw new NotImplementedException(
                         $"only references are supported as lvalues, got: {assignment.LValue}");
             }
+        }
+
+        /// <summary>
+        /// Generate "LOOP" statement. Only Exit condition and Body properties are supported. 
+        /// </summary>
+        /// <para>Stack behavior: expects nothing, leaves nothing.</para>
+        /// <param name="loop">SLang IR loop statement.</param>
+        private void GenerateLoop(Loop loop)
+        {
+            scopeCurrent = new Scope(scopeCurrent);
+
+            Instruction loopStart, loopExit;
+            ip.Append(loopStart = ip.Create(OpCodes.Nop));
+            loopExit = ip.Create(OpCodes.Nop);
+
+            var condition = loop.OptionalExitCondition;
+            if (condition != null)
+            {
+                var type = GenerateExpression(condition);
+                type.AssertIsAssignableTo(Context.TypeSystem.Integer);
+
+                if (type is BuiltInUnitDefinition builtInType)
+                    builtInType.Unboxed(ip);
+                
+                ip.Emit(OpCodes.Brfalse, loopExit);
+            }
+
+            GenerateEntityList(loop.Body);
+
+            ip.Emit(OpCodes.Br, loopStart);
+            ip.Append(loopExit);
+
+            scopeCurrent = scopeCurrent.ParentScope();
         }
 
         /// <summary>
