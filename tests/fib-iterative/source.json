@@ -1,0 +1,182 @@
+{
+  "type": "COMPILATION",
+  "children": [
+    {
+      "type": "DECLARATION_LIST",
+      "children": [
+        {
+          "type": "ROUTINE",
+          "children": [
+            {"type": "IDENTIFIER", "value": "fib_iterative"},
+            null,
+            {
+              "type": "PARAMETER_LIST",
+              "children": [
+                {"type": "PARAMETER", "children": [{"type": "UNIT_REF", "value": "Integer"}, {"type": "IDENTIFIER", "value": "x"}]}
+              ]
+            },
+            {"type": "UNIT_REF", "value": "Integer"},
+            null,
+            {
+              "type": "ENTITY_LIST",
+              "children": [
+
+                {
+                  "type": "VARIABLE",
+                  "children": [
+                    {"type": "IDENTIFIER", "value": "a"},
+                    {"type": "REF_VAL_SPEC", "value": "ref"}, {"type": "CONCURRENT_SPEC", "value": null}, {"type": "FOREIGN_SPEC", "value": null},
+                    {"type": "UNIT_REF", "value": "Integer"},
+                    {"type": "LITERAL", "value": "1", "children": [{"type": "UNIT_REF", "value": "Integer"}]}
+                  ]
+                },
+
+                {
+                  "type": "VARIABLE",
+                  "children": [
+                    {"type": "IDENTIFIER", "value": "b"},
+                    {"type": "REF_VAL_SPEC", "value": "ref"}, {"type": "CONCURRENT_SPEC", "value": null}, {"type": "FOREIGN_SPEC", "value": null},
+                    {"type": "UNIT_REF", "value": "Integer"},
+                    {"type": "LITERAL", "value": "1", "children": [{"type": "UNIT_REF", "value": "Integer"}]}
+                  ]
+                },
+
+                {
+                  "type": "VARIABLE",
+                  "children": [
+                    {"type": "IDENTIFIER", "value": "temp"},
+                    {"type": "REF_VAL_SPEC", "value": "ref"}, {"type": "CONCURRENT_SPEC", "value": null}, {"type": "FOREIGN_SPEC", "value": null},
+                    {"type": "UNIT_REF", "value": "Integer"},
+                    {"type": "LITERAL", "value": "0", "children": [{"type": "UNIT_REF", "value": "Integer"}]}
+                  ]
+                },
+
+                {
+                  "type": "VARIABLE",
+                  "children": [
+                    {"type": "IDENTIFIER", "value": "i"},
+                    {"type": "REF_VAL_SPEC", "value": "ref"}, {"type": "CONCURRENT_SPEC", "value": null}, {"type": "FOREIGN_SPEC", "value": null},
+                    {"type": "UNIT_REF", "value": "Integer"},
+                    {"type": "LITERAL", "value": "3", "children": [{"type": "UNIT_REF", "value": "Integer"}]}
+                  ]
+                },
+
+                {
+                  "type": "LOOP",
+                  "children": [
+                    null,
+                    {
+                      "type": "CALL",
+                      "children": [
+                        {"type": "CALLEE", "children": [{"type": "IDENTIFIER", "value": "Integer"}, {"type": "IDENTIFIER", "value": "operator<(Integer,Integer)"}]},
+                        {"type": "EXPRESSION_LIST", "children": [
+                          {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "i"}]},
+                          {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "x"}]}
+                        ]}
+                      ]
+                    },
+                    null,
+                    {
+                      "type": "ENTITY_LIST",
+                      "children": [
+
+                        {
+                          "type": "ASSIGNMENT",
+                          "children": [
+                            {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "temp"}]},
+                            {
+                              "type": "CALL",
+                              "children": [
+                                {"type": "CALLEE","children": [{"type": "IDENTIFIER", "value": "Integer"}, {"type": "IDENTIFIER", "value": "operator+(Integer,Integer)"}]},
+                                {"type": "EXPRESSION_LIST", "children": [
+                                  {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "a"}]},
+                                  {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "b"}]}
+                                ]}
+                              ]
+                            }
+                          ]
+                        },
+
+                        {
+                          "type": "ASSIGNMENT",
+                          "children": [
+                            {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "a"}]},
+                            {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "b"}]}
+                          ]
+                        },
+
+                        {
+                          "type": "ASSIGNMENT",
+                          "children": [
+                            {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "b"}]},
+                            {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "temp"}]}
+                          ]
+                        },
+
+                        {
+                          "type": "ASSIGNMENT",
+                          "children": [
+                            {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "i"}]},
+                            {
+                              "type": "CALL",
+                              "children": [
+                                {"type": "CALLEE","children": [{"type": "IDENTIFIER", "value": "Integer"}, {"type": "IDENTIFIER", "value": "operator+(Integer,Integer)"}]},
+                                {"type": "EXPRESSION_LIST", "children": [
+                                  {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "i"}]},
+                                  {"type": "LITERAL", "value": "1", "children": [{"type": "UNIT_REF", "value": "Integer"}]}
+                                ]}
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    null
+                  ]
+                },
+
+                {
+                  "type": "RETURN",
+                  "children": [
+                    {"type": "REFERENCE", "children": [{"type": "IDENTIFIER", "value": "b"}]}
+                  ]
+                }
+              ]
+            },
+            null
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ROUTINE",
+      "children": [
+        {"type": "IDENTIFIER", "value": "$anonymous"},
+        null,
+        {"type": "PARAMETER_LIST"},
+        {"type": "UNIT_REF", "value": "Integer"},
+        null,
+        {
+          "type": "ENTITY_LIST",
+          "children": [
+            {
+              "type": "RETURN",
+              "children": [
+                {
+                  "type": "CALL",
+                  "children": [
+                    {"type": "CALLEE", "children": [null, {"type": "IDENTIFIER", "value": "fib_iterative"}]},
+                    {"type": "EXPRESSION_LIST", "children": [
+                      {"type": "LITERAL", "value": "11", "children": [{"type": "UNIT_REF", "value": "Integer"}]}
+                    ]}
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        null
+      ]
+    }
+  ]
+}
