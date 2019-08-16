@@ -19,6 +19,7 @@ namespace SLang.NET.BuiltIns
 
             var lhs = new Identifier("lhs");
             var rhs = new Identifier("rhs");
+            var value = new Identifier("value");
 
             RegisterRoutine(new SLangRoutineDefinition(this,
                 new RoutineDeclaration(
@@ -55,6 +56,107 @@ namespace SLang.NET.BuiltIns
                     {
                         new Return(
                             new Call(new Callee(Intrinsics.UnitName, new Identifier("sub")), new[]
+                            {
+                                new Reference(lhs),
+                                new Reference(rhs),
+                            }))
+                    }
+                )));
+            
+            RegisterRoutine(new SLangRoutineDefinition(this,
+                new RoutineDeclaration(
+                    new Identifier("operator-(Integer)"),
+                    false,
+                    new[]
+                    {
+                        new RoutineDeclaration.Parameter(unitRef, value),
+                    },
+                    unitRef,
+                    new Entity[]
+                    {
+                        new Return(
+                            new Call(new Callee(Intrinsics.UnitName, new Identifier("neg")), new[]
+                            {
+                                new Reference(value),
+                            }))
+                    }
+                )));
+
+            RegisterRoutine(new SLangRoutineDefinition(this,
+                new RoutineDeclaration(
+                    new Identifier("operator!(Integer)"),
+                    false,
+                    new[]
+                    {
+                        new RoutineDeclaration.Parameter(unitRef, value),
+                    },
+                    unitRef,
+                    new Entity[]
+                    {
+                        new Return(
+                            new Call(new Callee(Intrinsics.UnitName, new Identifier("not")), new[]
+                            {
+                                new Reference(value),
+                            }))
+                    }
+                )));
+
+            RegisterRoutine(new SLangRoutineDefinition(this,
+                new RoutineDeclaration(
+                    new Identifier("operator<(Integer,Integer)"),
+                    false,
+                    new[]
+                    {
+                        new RoutineDeclaration.Parameter(unitRef, lhs),
+                        new RoutineDeclaration.Parameter(unitRef, rhs),
+                    },
+                    unitRef,
+                    new Entity[]
+                    {
+                        new Return(
+                            new Call(new Callee(Intrinsics.UnitName, new Identifier("clt")), new[]
+                            {
+                                new Reference(lhs),
+                                new Reference(rhs),
+                            }))
+                    }
+                )));
+
+            RegisterRoutine(new SLangRoutineDefinition(this,
+                new RoutineDeclaration(
+                    new Identifier("operator>(Integer,Integer)"),
+                    false,
+                    new[]
+                    {
+                        new RoutineDeclaration.Parameter(unitRef, lhs),
+                        new RoutineDeclaration.Parameter(unitRef, rhs),
+                    },
+                    unitRef,
+                    new Entity[]
+                    {
+                        new Return(
+                            new Call(new Callee(Intrinsics.UnitName, new Identifier("cgt")), new[]
+                            {
+                                new Reference(lhs),
+                                new Reference(rhs),
+                            }))
+                    }
+                )));
+
+            RegisterRoutine(new SLangRoutineDefinition(this,
+                new RoutineDeclaration(
+                    new Identifier("operator==(Integer,Integer)"),
+                    false,
+                    new[]
+                    {
+                        new RoutineDeclaration.Parameter(unitRef, lhs),
+                        new RoutineDeclaration.Parameter(unitRef, rhs),
+                    },
+                    unitRef,
+                    new Entity[]
+                    {
+                        new Return(
+                            new Call(new Callee(Intrinsics.UnitName, new Identifier("ceq")), new[]
                             {
                                 new Reference(lhs),
                                 new Reference(rhs),

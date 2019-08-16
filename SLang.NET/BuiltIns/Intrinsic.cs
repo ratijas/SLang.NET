@@ -4,7 +4,6 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using SLang.IR;
 using SLang.NET.Gen;
-using Variable = SLang.NET.Gen.Variable;
 
 namespace SLang.NET.BuiltIns
 {
@@ -22,9 +21,14 @@ namespace SLang.NET.BuiltIns
         public NativeRoutineDefinition IntrinsicAdd;
         public NativeRoutineDefinition IntrinsicSub;
         public NativeRoutineDefinition IntrinsicNeg;
+        public NativeRoutineDefinition IntrinsicNot;
+        public NativeRoutineDefinition IntrinsicLessThan;
+        public NativeRoutineDefinition IntrinsicGreaterThan;
+        public NativeRoutineDefinition IntrinsicEqual;
+
         public NativeRoutineDefinition StandardIO_put_Integer;
         public NativeRoutineDefinition StandardIO_put_String;
-        
+
 
         private SignatureReference unaryIntegerFuncSignature =>
             new SignatureReference(Context.TypeSystem.Integer,
@@ -91,6 +95,57 @@ namespace SLang.NET.BuiltIns
                     new NativeRoutineDefinition(this, name, unaryIntegerFuncSignature, method));
             }
 
+            // not
+            {
+                var name = new Identifier("not");
+                var method = new MethodDefinition(name.Value,
+                    MethodAttributes.Public | MethodAttributes.Static,
+                    Context.TypeSystem.Integer.NativeType);
+                method.Parameters.Add(new ParameterDefinition(Context.TypeSystem.Integer.NativeType));
+
+                RegisterRoutine(IntrinsicNot =
+                    new NativeRoutineDefinition(this, name, unaryIntegerFuncSignature, method));
+            }
+
+            // less than
+            {
+                var name = new Identifier("clt");
+                var method = new MethodDefinition(name.Value,
+                    MethodAttributes.Public | MethodAttributes.Static,
+                    Context.TypeSystem.Integer.NativeType);
+                method.Parameters.Add(new ParameterDefinition(Context.TypeSystem.Integer.NativeType));
+                method.Parameters.Add(new ParameterDefinition(Context.TypeSystem.Integer.NativeType));
+
+                RegisterRoutine(IntrinsicLessThan =
+                    new NativeRoutineDefinition(this, name, binaryIntegerFuncSignature, method));
+            }
+
+            // greater than
+            {
+                var name = new Identifier("cgt");
+                var method = new MethodDefinition(name.Value,
+                    MethodAttributes.Public | MethodAttributes.Static,
+                    Context.TypeSystem.Integer.NativeType);
+                method.Parameters.Add(new ParameterDefinition(Context.TypeSystem.Integer.NativeType));
+                method.Parameters.Add(new ParameterDefinition(Context.TypeSystem.Integer.NativeType));
+
+                RegisterRoutine(IntrinsicGreaterThan =
+                    new NativeRoutineDefinition(this, name, binaryIntegerFuncSignature, method));
+            }
+
+            // equal
+            {
+                var name = new Identifier("ceq");
+                var method = new MethodDefinition(name.Value,
+                    MethodAttributes.Public | MethodAttributes.Static,
+                    Context.TypeSystem.Integer.NativeType);
+                method.Parameters.Add(new ParameterDefinition(Context.TypeSystem.Integer.NativeType));
+                method.Parameters.Add(new ParameterDefinition(Context.TypeSystem.Integer.NativeType));
+
+                RegisterRoutine(IntrinsicEqual =
+                    new NativeRoutineDefinition(this, name, binaryIntegerFuncSignature, method));
+            }
+
             // StandardIO$put$Integer
             {
                 var name = new Identifier("StandardIO$put$Integer");
@@ -102,7 +157,7 @@ namespace SLang.NET.BuiltIns
                 RegisterRoutine(StandardIO_put_Integer =
                     new NativeRoutineDefinition(this, name, integerConsumerSignature, method));
             }
-            
+
             // StandardIO$put$String
             {
                 var name = new Identifier("StandardIO$put$String");
@@ -196,6 +251,95 @@ namespace SLang.NET.BuiltIns
                 ip.Emit(OpCodes.Ret);
             }
 
+            // not
+            {
+                var method = IntrinsicNot;
+
+                var ip = method.NativeMethod.Body.GetILProcessor();
+                var arg = new ArgumentVariable(integer, 0);
+
+                // prepare argument
+                arg.Load(ip);
+                integer.Unboxed(ip);
+                // prepare zero
+                ip.Emit(OpCodes.Ldc_I4_0);
+                // result = (arg == 0);
+                ip.Emit(OpCodes.Ceq);
+                var result = integer.Boxed(ip);
+                // return result;
+                result.Load(ip);
+                ip.Emit(OpCodes.Ret);
+            }
+
+            // less than
+            {
+                var method = IntrinsicLessThan;
+
+                var ip = method.NativeMethod.Body.GetILProcessor();
+
+                var lhs = new ArgumentVariable(integer, 0);
+                var rhs = new ArgumentVariable(integer, 1);
+
+                // prepare lhs
+                lhs.Load(ip);
+                integer.Unboxed(ip);
+                // prepare rhs
+                rhs.Load(ip);
+                integer.Unboxed(ip);
+                // result = lhs < rhs;
+                ip.Emit(OpCodes.Clt);
+                var result = integer.Boxed(ip);
+                // return result;
+                result.Load(ip);
+                ip.Emit(OpCodes.Ret);
+            }
+            
+            // greater than
+            {
+                var method = IntrinsicGreaterThan;
+
+                var ip = method.NativeMethod.Body.GetILProcessor();
+
+                var lhs = new ArgumentVariable(integer, 0);
+                var rhs = new ArgumentVariable(integer, 1);
+
+                // prepare lhs
+                lhs.Load(ip);
+                integer.Unboxed(ip);
+                // prepare rhs
+                rhs.Load(ip);
+                integer.Unboxed(ip);
+                // result = lhs > rhs;
+                ip.Emit(OpCodes.Cgt);
+                var result = integer.Boxed(ip);
+                // return result;
+                result.Load(ip);
+                ip.Emit(OpCodes.Ret);
+            }
+            
+            // equal
+            {
+                var method = IntrinsicEqual;
+
+                var ip = method.NativeMethod.Body.GetILProcessor();
+
+                var lhs = new ArgumentVariable(integer, 0);
+                var rhs = new ArgumentVariable(integer, 1);
+
+                // prepare lhs
+                lhs.Load(ip);
+                integer.Unboxed(ip);
+                // prepare rhs
+                rhs.Load(ip);
+                integer.Unboxed(ip);
+                // result = (lhs == rhs);
+                ip.Emit(OpCodes.Ceq);
+                var result = integer.Boxed(ip);
+                // return result;
+                result.Load(ip);
+                ip.Emit(OpCodes.Ret);
+            }
+
             // StandardIO$put$Integer
             {
                 // direct proxy to void Console.Write(Int32)
@@ -217,7 +361,7 @@ namespace SLang.NET.BuiltIns
                 // return nothing
                 ip.Emit(OpCodes.Ret);
             }
-            
+
             // StandardIO$put$String
             {
                 // direct proxy to void Console.Write(String)
