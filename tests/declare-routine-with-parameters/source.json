@@ -88,8 +88,7 @@
       "children": [
         {
           "type": "IDENTIFIER",
-          "value": "$anonymous",
-          "children": []
+          "value": "$anonymous"
         },
         null,
         {
